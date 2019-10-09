@@ -12,7 +12,8 @@ func TestCreateDocument(t *testing.T) {
 	c, err := auth()
 	require.NoError(t, err)
 
-	createDocument(c, "markf-test-bucket", "h5.json", someJSON())
+	err = createDocument(c, "markf-test-bucket", "h5.json", someJSON())
+	require.NoError(t, err)
 }
 
 func TestCanUnmarshal(t *testing.T) {

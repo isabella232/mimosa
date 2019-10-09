@@ -1,4 +1,3 @@
-// Package onfinalize handles the onfinalize event for a gcs bucket
 package onfinalize
 
 import (
@@ -95,6 +94,9 @@ func HandleGCSEvent(ctx context.Context, e GCSEvent) error {
 
 	//TODO can we get current projectID, do we want that
 	fc, err := firestore.NewClient(ctx, "lyra-proj")
+	if err != nil {
+		return err
+	}
 	hosts := fc.Collection("hosts")
 	doc, result, err := hosts.Add(context.Background(), map[string]interface{}{
 		"name": berry.Item.Name,

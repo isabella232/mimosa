@@ -17,13 +17,14 @@ func auth() (*storage.Client, error) {
 	return storage.NewClient(ctx)
 }
 
-func createDocument(client *storage.Client, bucketName string, docName string, json string) {
-	upload(context.Background(),
+func createDocument(client *storage.Client, bucketName string, docName string, json string) error {
+	_, _, err := upload(context.Background(),
 		strings.NewReader(json),
 		projectID,
 		bucketName,
 		docName,
 		false)
+	return err
 }
 
 // lifted from https://github.com/GoogleCloudPlatform/golang-samples/blob/master/storage/gcsupload/gcsupload.go

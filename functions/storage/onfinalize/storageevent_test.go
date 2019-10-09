@@ -2,9 +2,9 @@ package onfinalize
 
 import (
 	"context"
-	"testing"
-	"os"
 	"fmt"
+	"os"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -19,6 +19,9 @@ func TestRead(t *testing.T) {
 	s := string(b)
 	require.Equal(t, "{\"blah\":\"yada\"}", s)
 
+	//gsutil ls
+	//gsutil ls gs://markf-test-bucket/
+	//gsutil cat gs://markf-test-bucket/h1.json
 }
 
 func auth() (*storage.Client, error) {

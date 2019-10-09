@@ -5,13 +5,12 @@ import (
 	"context"
 	"io/ioutil"
 
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
 	"log"
-
-	// "net/http"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/storage"
 )
@@ -83,9 +82,27 @@ func HandleGCSEvent(ctx context.Context, e GCSEvent) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("b: %v\n", b)
+	log.Printf("b: %s\n", b)
 
-	return nil
+	var berry Berry
+	err = json.Unmarshal(b, &berry)
+	if err != nil {
+		return err
+	}
+	log.Printf("berry: %s\n", b)
+	log.Printf("berry.Flavors[0].Flavor.Name: %v\n", berry.Flavors[0].Flavor.Name)
+	log.Printf("berry.Item.Name: %v\n", berry.Item.Name)
+
+	//TODO can we get current projectID, do we want that
+	fc, err := firestore.NewClient(ctx, "lyra-proj")
+	hosts := fc.Collection("hosts")
+	doc, result, err := hosts.Add(context.Background(), map[string]interface{}{
+		"name": berry.Item.Name,
+	})
+	log.Printf("doc: %v\n", doc)
+	log.Printf("result: %v\n", result)
+
+	return err
 }
 
 // read is taken from here
@@ -105,4 +122,36 @@ func read(client *storage.Client, bucket, object string) ([]byte, error) {
 	}
 	return data, nil
 	// [END download_file]
+}
+
+// Berry came with the help of https://mholt.github.io/json-to-go/ and is based on data from
+// curl https://pokeapi.co/api/v2/berry/1
+type Berry struct {
+	Firmness struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"firmness"`
+	Flavors []struct {
+		Flavor struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"flavor"`
+		Potency int `json:"potency"`
+	} `json:"flavors"`
+	GrowthTime int `json:"growth_time"`
+	ID         int `json:"id"`
+	Item       struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"item"`
+	MaxHarvest       int    `json:"max_harvest"`
+	Name             string `json:"name"`
+	NaturalGiftPower int    `json:"natural_gift_power"`
+	NaturalGiftType  struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"natural_gift_type"`
+	Size        int `json:"size"`
+	Smoothness  int `json:"smoothness"`
+	SoilDryness int `json:"soil_dryness"`
 }

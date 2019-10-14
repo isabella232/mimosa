@@ -41,15 +41,16 @@ type sourceConfig struct {
 }
 
 func main() {
-
-	// Pull GCP configuration from the environment
-	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-	if projectID == "" {
-		log.Fatal("GOOGLE_CLOUD_PROJECT environment variable must be set")
+	//check that GOOGLE_APPLICATION_CREDENTIALS is set as this (json file) will be used to create a new storage.NewClient(ctx)
+	//the project_id is configured in the json file, see: https://cloud.google.com/docs/authentication/getting-started
+	value := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if len(value) == 0 {
+		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable must be set")
 	}
-	bucket := os.Getenv("GCP_BUCKET")
-	if bucket == "" {
-		log.Fatal("GCP_BUCKET environment variable must be set")
+
+	bucket := os.Getenv("MIMOSA_GCP_BUCKET")
+	if len(bucket) == 0 {
+		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
 	}
 
 	// Create GCP client
@@ -60,7 +61,11 @@ func main() {
 	}
 
 	// Read source config from the predetermined config object in the bucket
-	//
+	// NOTE: create a user and its access key with limited privileges as follows:
+	//   aws iam create-user --user-name your-service-account
+	//   aws iam create-access-key --user-name your-service-account
+	//   (copy the AccessKeyId and SecretAccessKey into the accessKey and secretKey of the config.json file)
+	//   aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess --user-name your-service-account
 	// Add the config manually like this:
 	// gsutil cp config.json gs://aws1-test-bucket
 	//
@@ -98,6 +103,9 @@ func main() {
 			sourceConfig.SecretKey,
 			""),
 	})
+	if err != nil {
+		log.Fatalf("Cannot create an AWS session: %v", err)
+	}
 	svc := ec2.New(session)
 	input := &ec2.DescribeInstancesInput{}
 	result, err := svc.DescribeInstances(input)
@@ -119,8 +127,7 @@ func main() {
 	// Write each instance to the bucket
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
-			// Write the instance to
-			object := fmt.Sprintf("%s", *instance.InstanceId)
+			object := *instance.InstanceId
 			wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 			bs, err := json.Marshal(instance)
 			if err != nil {

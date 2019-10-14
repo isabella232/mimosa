@@ -65,7 +65,7 @@ func main() {
 	// Write each instance to the bucket
 	for _, instance := range instances {
 		// Write the instance to
-		object := fmt.Sprintf("%s", *instance.InstanceId)
+		object := *instance.InstanceId
 		fmt.Printf("Object: %v\n", object)
 
 		wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
@@ -84,23 +84,6 @@ func main() {
 		fmt.Printf("Wrote: %s\n", *instance.InstanceId)
 	}
 
-}
-
-func read(client *storage.Client, bucket, object string) ([]byte, error) {
-	ctx := context.Background()
-	// [START download_file]
-	rc, err := client.Bucket(bucket).Object(object).NewReader(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rc.Close()
-
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-	// [END download_file]
 }
 
 // LoadMachinesFromCassette marshalls the yaml and json data
@@ -129,12 +112,8 @@ func LoadMachinesFromCassette(cassetteFile string) ([]*ec2.Instance, error) {
 			}
 
 			for _, inst := range results.Reservations {
-				for _, vm := range inst.Instances {
-					machines = append(machines, vm)
-				}
-
+				machines = append(machines, inst.Instances...)
 			}
-
 		}
 	}
 

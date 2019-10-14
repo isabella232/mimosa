@@ -1,21 +1,4 @@
-// Copyright 2019 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Sample buckets creates a bucket, lists buckets and deletes a bucket
-// using the Google Storage API. More documentation is available at
-// https://cloud.google.com/storage/docs/json_api/v1/.
-package main
+package libaws
 
 import (
 	"context"
@@ -23,13 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
-
-	"github.com/aws/aws-sdk-go/aws/credentials"
 
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -40,24 +21,14 @@ type sourceConfig struct {
 	SecretKey string `json:"secretKey,omitempty"`
 }
 
-func main() {
-	//check that GOOGLE_APPLICATION_CREDENTIALS is set as this (json file) will be used to create a new storage.NewClient(ctx)
-	//the project_id is configured in the json file, see: https://cloud.google.com/docs/authentication/getting-started
-	value := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
-	if len(value) == 0 {
-		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable must be set")
-	}
-
-	bucket := os.Getenv("MIMOSA_GCP_BUCKET")
-	if len(bucket) == 0 {
-		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
-	}
+// Run the source
+func Run(bucket string) error {
 
 	// Create GCP client
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Read source config from the predetermined config object in the bucket
@@ -71,28 +42,28 @@ func main() {
 	//
 	rc, err := client.Bucket(bucket).Object("config.json").NewReader(ctx)
 	if err != nil {
-		log.Fatalf("Cannot find the config object: %v", err)
+		return fmt.Errorf("Cannot find the config object: %v", err)
 	}
 	defer rc.Close()
 	data, err := ioutil.ReadAll(rc)
 	if err != nil {
-		log.Fatalf("Cannot read the config object: %v", err)
+		return fmt.Errorf("Cannot read the config object: %v", err)
 	}
 	var sourceConfig sourceConfig
 	err = json.Unmarshal(data, &sourceConfig)
 	if err != nil {
-		log.Fatalf("Cannot unmarshal the config object: %v", err)
+		return fmt.Errorf("Cannot unmarshal the config object: %v", err)
 	}
 
 	// Validate the config
 	if sourceConfig.Region == "" {
-		log.Fatal("Source configuration must specify a region")
+		return fmt.Errorf("Source configuration must specify a region")
 	}
 	if sourceConfig.AccessKey == "" {
-		log.Fatal("Source configuration must specify an accessKey")
+		return fmt.Errorf("Source configuration must specify an accessKey")
 	}
 	if sourceConfig.SecretKey == "" {
-		log.Fatal("Source configuration must specify a secretKey")
+		return fmt.Errorf("Source configuration must specify a secretKey")
 	}
 
 	// Query AWS for instances
@@ -104,7 +75,7 @@ func main() {
 			""),
 	})
 	if err != nil {
-		log.Fatalf("Cannot create an AWS session: %v", err)
+		return fmt.Errorf("Cannot create an AWS session: %v", err)
 	}
 	svc := ec2.New(session)
 	input := &ec2.DescribeInstancesInput{}
@@ -113,16 +84,15 @@ func main() {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				fmt.Println(aerr.Error())
+				log.Print(aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			fmt.Println(err.Error())
+			log.Print(err.Error())
 		}
-		return
+		return err
 	}
-	fmt.Println(result)
 
 	// Write each instance to the bucket
 	for _, reservation := range result.Reservations {
@@ -131,18 +101,19 @@ func main() {
 			wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 			bs, err := json.Marshal(instance)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			_, err = wc.Write(bs)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			err = wc.Close()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
-			fmt.Printf("Wrote: %s\n", *instance.InstanceId)
+			log.Printf("Wrote: %s\n", *instance.InstanceId)
 		}
 	}
 
+	return nil
 }

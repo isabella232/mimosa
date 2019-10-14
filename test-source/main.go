@@ -34,16 +34,22 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+//MIMOSA_GCP_BUCKET=your-bucket go run main.go
 func main() {
 	ctx := context.Background()
 
-	// Connect to GCP
-	projectID := "scott-255409"
-	if projectID == "" {
-		fmt.Fprintf(os.Stderr, "GOOGLE_CLOUD_PROJECT environment variable must be set.\n")
-		os.Exit(1)
+	//check that GOOGLE_APPLICATION_CREDENTIALS is set as this (json file) will be used to create a new storage.NewClient(ctx)
+	//the project_id is configured in the json file, see: https://cloud.google.com/docs/authentication/getting-started
+	value := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if len(value) == 0 {
+		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable must be set")
 	}
-	bucket := "scott555"
+
+	bucket := os.Getenv("MIMOSA_GCP_BUCKET")
+	if len(bucket) == 0 {
+		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
+	}
+
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -54,11 +60,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("Instances: %v\n", len(instances))
 
 	// Write each instance to the bucket
 	for _, instance := range instances {
 		// Write the instance to
 		object := fmt.Sprintf("%s", *instance.InstanceId)
+		fmt.Printf("Object: %v\n", object)
+
 		wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 		bs, err := json.Marshal(instance)
 		if err != nil {

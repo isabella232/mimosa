@@ -17,6 +17,17 @@ func TestCanUnmarshal(t *testing.T) {
 	log.Printf("instance: %s\n", b)
 }
 
+func TestMapInstance(t *testing.T) {
+	var instance ec2.Instance
+	b := []byte(someJSON())
+	err := json.Unmarshal(b, &instance)
+	require.NoError(t, err)
+	actual, err := mapInstance(instance)
+	require.NoError(t, err)
+	require.Equal(t, "i-0dac5f409ebb47a71", actual["name"])
+	require.Equal(t, "13.56.178.141", actual["public_ip"])
+	require.Equal(t, "ec2-13-56-178-141.us-west-1.compute.amazonaws.com", actual["public_dns"])
+}
 func someJSON() string {
 	return `{
 	"AmiLaunchIndex": 0,

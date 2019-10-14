@@ -10,6 +10,7 @@ import (
 	"time"
 
 	// "cloud.google.com/go/firestore"
+	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -67,7 +68,36 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	}
 	log.Printf("instance: %s\n", b)
 
+	fc, err := firestore.NewClient(ctx, "lyra-proj")
+	if err != nil {
+		return err
+	}
+	i, err := mapInstance(instance)
+	if err != nil {
+		return err
+	}
+	hosts := fc.Collection("hosts")
+	doc, result, err := hosts.Add(context.Background(), i)
+	log.Printf("doc: %v\n", doc)
+	log.Printf("result: %v\n", result)
 	return err
+}
+
+func mapInstance(instance ec2.Instance) (map[string]interface{}, error) {
+	m := map[string]interface{}{
+		"name":  *instance.InstanceId,
+		"since": *instance.LaunchTime,
+	}
+	setIfNotNull(m, "public_ip", instance.PublicIpAddress)
+	setIfNotNull(m, "public_dns", instance.PublicDnsName)
+	return m, nil
+}
+
+func setIfNotNull(m map[string]interface{}, key string, value *string) {
+	if value == nil {
+		return
+	}
+	m[key] = *value
 }
 
 // read is taken from here

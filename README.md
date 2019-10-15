@@ -39,6 +39,14 @@ The following example assumes AWS. You will need your AWS access key, secret key
 
 ## Deploying a source
 
+Run `scripts/create-source.sh` specifying the name, source dir and config file for your source
+
+e.g.
+
+    sh create-source.sh aws1 sources/aws config.json
+
+## Deploying a source (manually)
+
 Deploying a source is currently a manual process.
 
 1) Choose a salt value of 8 random characters e.g. 7870d1da. If the command fails, any random means of choosing the value is fine.

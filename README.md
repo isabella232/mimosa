@@ -8,6 +8,10 @@ Installed the Google Cloud SDK tools:
 
     brew cask install google-cloud-sdk
 
+You'll need to authenticate with gcloud:
+
+    gcloud auth login
+
 To keep mimosa infrastructure separate from everything else, create a new Google Cloud project here: https://console.cloud.google.com/projectcreate e.g. "mimosa-255913"
 
 Set your GOOGLE_CLOUD_PROJECT environment variable to match your project name:

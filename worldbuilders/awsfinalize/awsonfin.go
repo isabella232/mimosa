@@ -68,7 +68,7 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	}
 	log.Printf("instance: %s\n", b)
 
-	fc, err := firestore.NewClient(ctx, "lyra-proj")
+	fc, err := firestore.NewClient(ctx, firestore.DetectProjectID)
 	if err != nil {
 		return err
 	}

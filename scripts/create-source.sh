@@ -58,7 +58,7 @@ echo "Creating pub-sub topic ..."
 gcloud pubsub topics create $SOURCE_NAME
 
 echo
-echo "Deploying cloud function ..."
+echo "Deploying source cloud function ..."
 gcloud functions deploy \
  --runtime go111 \
  --trigger-topic $SOURCE_NAME \
@@ -67,6 +67,16 @@ gcloud functions deploy \
  --source $CLOUD_FUNCTION_SOURCE \
  --entry-point=SourceSubscriber \
  $SOURCE_NAME
+
+echo
+echo "Deploying world-builder cloud function ..."
+gcloud functions deploy \
+ --runtime go111 \
+ --trigger-resource $BUCKET \
+ --trigger-event google.storage.object.finalize \
+ --source worldbuilders/awsfinalize \
+ --entry-point HandleInstance \
+ HandleInstance-$BUCKET
 
 echo "Test your source by sending a message to the topic:"
 echo

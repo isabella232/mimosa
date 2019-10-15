@@ -22,7 +22,17 @@ Configure gcloud to use the correct project:
 
     gcloud config set project mimosa-255913
 
-## Source credentials
+Enable Firestore in your new project here: https://console.cloud.google.com/firestore
+
+## User Interface
+
+Deploy the UI:
+
+    gcloud functions deploy HandleHTTPRequest --runtime go111  --trigger-http --source ui
+
+## Sources
+
+### Source credentials
 
 You will need credentials and other configuration for your source. We recommend following the principle of least privilege. You can create a dedicated account for the target cloud provider with read-only permissions and use the credentials for that account in mimosa. Do not upload high privilege creds to mimosa at this stage!
 
@@ -37,7 +47,7 @@ The following example assumes AWS. You will need your AWS access key, secret key
 }
 ```
 
-## Deploying a source
+### Deploying a source
 
 Run `scripts/create-source.sh` specifying the name, source dir and config file for your source
 
@@ -45,7 +55,7 @@ e.g.
 
     sh create-source.sh aws1 sources/aws config.json
 
-## Deploying a source (manually)
+### Deploying a source (manually)
 
 Deploying a source is currently a manual process.
 

@@ -36,7 +36,7 @@ func HandleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 
 func getHosts() ([]Host, error) {
 	ctx := context.Background()
-	fc, err := firestore.NewClient(ctx, "lyra-proj")
+	fc, err := firestore.NewClient(ctx, firestore.DetectProjectID)
 	if err != nil {
 		return nil, err
 	}

@@ -24,6 +24,8 @@ type sourceConfig struct {
 // Run the source
 func Run(bucket string) error {
 
+	log.Printf("Accessing bucket %s ...", bucket)
+
 	// Create GCP client
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -115,5 +117,6 @@ func Run(bucket string) error {
 		}
 	}
 
+	log.Printf("Done")
 	return nil
 }

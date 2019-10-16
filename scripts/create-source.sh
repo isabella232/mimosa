@@ -4,8 +4,8 @@
 
 set -e
 
-if [ -z "$GOOGLE_CLOUD_PROJECT" ]; then
-    echo "GOOGLE_CLOUD_PROJECT must be defined";
+if [ -z "$MIMOSA_GCP_PROJECT" ]; then
+    echo "MIMOSA_GCP_PROJECT must be defined";
     exit 1
 fi
 
@@ -50,7 +50,7 @@ gcloud iam service-accounts create $SOURCE_NAME
 
 echo
 echo "Setting service account permissions ..."
-gsutil iam ch serviceAccount:$SOURCE_NAME@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com:objectAdmin gs://$BUCKET
+gsutil iam ch serviceAccount:$SOURCE_NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com:objectAdmin gs://$BUCKET
 echo "Permisions set."
 
 echo
@@ -62,7 +62,7 @@ echo "Deploying source cloud function ..."
 gcloud functions deploy \
  --runtime go111 \
  --trigger-topic $SOURCE_NAME \
- --service-account=$SOURCE_NAME@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+ --service-account=$SOURCE_NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com \
  --set-env-vars MIMOSA_GCP_BUCKET=$BUCKET \
  --source $CLOUD_FUNCTION_SOURCE \
  --entry-point=SourceSubscriber \
@@ -80,7 +80,7 @@ gcloud functions deploy \
 
 echo "Test your source by sending a message to the topic:"
 echo
-echo "gcloud pubsub topics publish projects/$GOOGLE_CLOUD_PROJECT/topics/$SOURCE_NAME --message \"go\""
+echo "gcloud pubsub topics publish projects/$MIMOSA_GCP_PROJECT/topics/$SOURCE_NAME --message \"go\""
 
 echo
 echo "Finished"

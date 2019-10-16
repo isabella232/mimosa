@@ -14,9 +14,9 @@ You'll need to authenticate with gcloud:
 
 To keep mimosa infrastructure separate from everything else, create a new Google Cloud project here: https://console.cloud.google.com/projectcreate e.g. "mimosa-255913"
 
-Set your GOOGLE_CLOUD_PROJECT environment variable to match your project name:
+Set the MIMOSA_GCP_PROJECT environment variable to match your project name:
 
-    export GOOGLE_CLOUD_PROJECT=mimosa-255913
+    export MIMOSA_GCP_PROJECT=mimosa-255913
 
 Configure gcloud to use the correct project:
 

@@ -24,63 +24,60 @@ if [ ! -f "$3" ]; then
     exit 1
 fi
 
-SOURCE_NAME=mimosa-source-$1
+SALT=`xxd -l4 -ps /dev/urandom`
+NAME="mimosa-source-$1-$SALT"
 CLOUD_FUNCTION_SOURCE=$2
 CONFIG_FILE=$3
-SALT=`xxd -l4 -ps /dev/urandom`
-BUCKET="$SOURCE_NAME-$SALT"
 
-echo "Name        : $SOURCE_NAME"
+echo "Name        : $NAME"
 echo "Src Dir     : $CLOUD_FUNCTION_SOURCE"
 echo "Config File : $CONFIG_FILE"
-echo "Salt        : $SALT"
-echo "Bucket      : $BUCKET"
 
 echo
 echo "Creating bucket ..."
-gsutil mb -b on gs://$BUCKET
+gsutil mb -b on gs://$NAME
 
 echo
 echo "Copying config to bucket ..."
-gsutil cp $CONFIG_FILE gs://$BUCKET/config.json
+gsutil cp $CONFIG_FILE gs://$NAME/config.json
 
 echo
 echo "Creating service account ..."
-gcloud iam service-accounts create $SOURCE_NAME
+gcloud iam service-accounts create $NAME
 
 echo
 echo "Setting service account permissions ..."
-gsutil iam ch serviceAccount:$SOURCE_NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com:objectAdmin gs://$BUCKET
+gsutil iam ch serviceAccount:$NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com:objectAdmin gs://$NAME
 echo "Permisions set."
 
 echo
 echo "Creating pub-sub topic ..."
-gcloud pubsub topics create $SOURCE_NAME
+gcloud pubsub topics create $NAME
 
 echo
 echo "Deploying source cloud function ..."
 gcloud functions deploy \
  --runtime go111 \
- --trigger-topic $SOURCE_NAME \
- --service-account=$SOURCE_NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com \
- --set-env-vars MIMOSA_GCP_BUCKET=$BUCKET \
+ --trigger-topic $NAME \
+ --service-account=$NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com \
+ --set-env-vars MIMOSA_GCP_BUCKET=$NAME \
  --source $CLOUD_FUNCTION_SOURCE \
  --entry-point=SourceSubscriber \
- $SOURCE_NAME
+ $NAME
 
 echo
 echo "Deploying world-builder cloud function ..."
 gcloud functions deploy \
  --runtime go111 \
- --trigger-resource $BUCKET \
+ --trigger-resource $NAME \
  --trigger-event google.storage.object.finalize \
  --source worldbuilders/awsfinalize \
  --entry-point HandleInstance \
- HandleInstance-$BUCKET
+ HandleInstance-$NAME
 
 echo "Test your source by sending a message to the topic:"
 echo
-echo "gcloud pubsub topics publish projects/$MIMOSA_GCP_PROJECT/topics/$SOURCE_NAME --message \"go\""
+echo "gcloud pubsub topics publish projects/$MIMOSA_GCP_PROJECT/topics/$NAME --message \"go\""
 
 echo
 echo "Finished"

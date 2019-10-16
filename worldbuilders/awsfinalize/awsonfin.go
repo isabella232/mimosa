@@ -72,10 +72,8 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	if err != nil {
 		return err
 	}
-	i, err := mapInstance(instance)
-	if err != nil {
-		return err
-	}
+	i := mapInstance(instance)
+	i["source"] = e.Bucket
 	hosts := fc.Collection("hosts")
 	doc, result, err := hosts.Add(context.Background(), i)
 	log.Printf("doc: %v\n", doc)
@@ -83,14 +81,15 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	return err
 }
 
-func mapInstance(instance ec2.Instance) (map[string]interface{}, error) {
+func mapInstance(instance ec2.Instance) map[string]interface{} {
 	m := map[string]interface{}{
 		"name":  *instance.InstanceId,
 		"since": *instance.LaunchTime,
 	}
 	setIfNotNull(m, "public_ip", instance.PublicIpAddress)
 	setIfNotNull(m, "public_dns", instance.PublicDnsName)
-	return m, nil
+	setIfNotNull(m, "state", instance.State.Name)
+	return m
 }
 
 func setIfNotNull(m map[string]interface{}, key string, value *string) {

@@ -65,6 +65,8 @@ func getHTML() string {
 				<th>Name</th>
 				<th>PublicDNS</th>
 				<th>PublicIP</th>
+				<th>State</th>
+				<th>Source</th>
 			  </tr>
 			</thead>
 			<tbody>
@@ -73,6 +75,8 @@ func getHTML() string {
 				<td>{{.Name}}</td>
 				<td>{{.PublicDNS}}</td>
 				<td>{{.PublicIP}}</td>
+				<td>{{.State}}</td>
+				<td>{{.Source}}</td>
 			  </tr>
 			  {{end}}
 			</tbody>

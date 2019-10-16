@@ -19,6 +19,8 @@ type Host struct {
 	Name      string
 	PublicDNS string
 	PublicIP  string
+	State     string
+	Source    string
 }
 
 // HandleHTTPRequest handles a request and serves a UI by pulling host data from firestore
@@ -40,12 +42,11 @@ func getHosts() ([]Host, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit := 2
 
 	hosts := []Host{}
 	iter := fc.Collection("hosts").Documents(ctx)
 
-	for i := 0; i < limit; i++ {
+	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
@@ -81,6 +82,12 @@ func hostFromMap(m map[string]interface{}) Host {
 	}
 	if v, ok := m["public_ip"]; ok {
 		h.PublicIP = v.(string)
+	}
+	if v, ok := m["state"]; ok {
+		h.State = v.(string)
+	}
+	if v, ok := m["source"]; ok {
+		h.Source = v.(string)
 	}
 	return h
 }

@@ -2,14 +2,14 @@ package awsfinalize
 
 import (
 	"context"
-	"io/ioutil"
-
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"time"
 
-	// "cloud.google.com/go/firestore"
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/storage"
@@ -68,15 +68,33 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	}
 	log.Printf("instance: %s\n", b)
 
+	// Check we have an AWS ID since we're very dependent on it
+	if instance.InstanceId == nil {
+		return fmt.Errorf("No AWS instance ID could be found: %v", instance)
+	}
+
+	// Connect to firestore
 	fc, err := firestore.NewClient(ctx, firestore.DetectProjectID)
 	if err != nil {
 		return err
 	}
+
+	// Compute a deterministic hash to use as firestore ID
+	sha := sha1.New()
+	sha.Write([]byte(e.Bucket))
+	sha.Write([]byte(*instance.InstanceId))
+	id := hex.EncodeToString(sha.Sum(nil))
+
+	// Map the AWS instance into a doc to be stored
 	i := mapInstance(instance)
 	i["source"] = e.Bucket
+
+	// Write the doc to the "hosts" collection
 	hosts := fc.Collection("hosts")
-	doc, result, err := hosts.Add(context.Background(), i)
-	log.Printf("doc: %v\n", doc)
+	result, err := hosts.Doc(id).Set(context.Background(), i)
+	if err != nil {
+		return err
+	}
 	log.Printf("result: %v\n", result)
 	return err
 }

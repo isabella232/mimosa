@@ -45,6 +45,11 @@ func Run(bucket string) error {
 	}
 
 	// Validate the config
+	//
+	// FIXME
+	// There should be a token in here to access the GCP project
+	// For now assign your source service account the "compute viewer" permission here: https://console.cloud.google.com/iam-admin/iam
+	//
 	if sourceConfig.Project == "" {
 		return fmt.Errorf("Source configuration must specify a project")
 	}

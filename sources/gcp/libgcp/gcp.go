@@ -76,6 +76,8 @@ func Run(bucket string) error {
 
 	// Write each instance to the bucket
 	for _, instance := range instances.Items {
+		// FIXME
+		// Should be checking for changes via the "state.json" file - see libaws
 		object := fmt.Sprintf("%d", instance.Id)
 		wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 		bs, err := json.Marshal(instance)

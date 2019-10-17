@@ -2,6 +2,8 @@ package libaws
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -96,27 +98,77 @@ func Run(bucket string) error {
 		return err
 	}
 
+	// Read state from previous runs
+	var checksums map[string]string
+	rc, err = client.Bucket(bucket).Object("state.json").NewReader(ctx)
+	if err != nil && err != storage.ErrObjectNotExist {
+		return fmt.Errorf("Cannot read the state object: %v", err)
+	}
+	if err == nil {
+		defer rc.Close()
+		data, err = ioutil.ReadAll(rc)
+		if err != nil {
+			return fmt.Errorf("Cannot read the state object: %v", err)
+		}
+		err = json.Unmarshal(data, &checksums)
+		if err != nil {
+			return fmt.Errorf("Cannot unmarshal the state object: %v", err)
+		}
+	}
+	if checksums == nil {
+		checksums = map[string]string{}
+	}
+
 	// Write each instance to the bucket
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
-			object := *instance.InstanceId
-			wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
+			id := *instance.InstanceId
 			bs, err := json.Marshal(instance)
 			if err != nil {
 				return err
 			}
-			_, err = wc.Write(bs)
-			if err != nil {
-				return err
+
+			// Only write this instance if it has changed
+			sha := sha1.New()
+			sha.Write(bs)
+			checksum := hex.EncodeToString(sha.Sum(nil))
+			previousChecksum, present := checksums[id]
+			if !present || checksum != previousChecksum {
+				wc := client.Bucket(bucket).Object(id).NewWriter(ctx)
+				_, err = wc.Write(bs)
+				if err != nil {
+					log.Printf("Failed to write %s: %v", id, err)
+					continue
+				}
+				err = wc.Close()
+				if err != nil {
+					log.Printf("Failed to close %s: %v", id, err)
+					continue
+				}
+				log.Printf("CHANGE FOUND - Wrote: %s", id)
+				checksums[id] = checksum
+			} else {
+				log.Printf("No change found: %s", id)
 			}
-			err = wc.Close()
-			if err != nil {
-				return err
-			}
-			log.Printf("Wrote: %s\n", *instance.InstanceId)
 		}
 	}
 
+	// Write state back to the bucket
+	bs, err := json.Marshal(checksums)
+	if err != nil {
+		return fmt.Errorf("Cannot marshal the state object: %v", err)
+	}
+	wc := client.Bucket(bucket).Object("state.json").NewWriter(ctx)
+	_, err = wc.Write(bs)
+	if err != nil {
+		return fmt.Errorf("Cannot write the state object: %v", err)
+	}
+	err = wc.Close()
+	if err != nil {
+		return fmt.Errorf("Cannot close the state object: %v", err)
+	}
+
+	// Done!
 	log.Printf("Done")
 	return nil
 }

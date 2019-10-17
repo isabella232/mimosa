@@ -3,6 +3,8 @@ package ui
 import (
 	"fmt"
 	"net/http"
+	"sort"
+	"strings"
 
 	// "html"
 	"context"
@@ -60,8 +62,17 @@ func getHosts() ([]Host, error) {
 
 		h := hostFromMap(d)
 		hosts = append(hosts, h)
-
 	}
+
+	// Sort for demo purposes
+	sort.Slice(hosts, func(i, j int) bool {
+		result := strings.Compare(hosts[i].Source, hosts[j].Source)
+		if result != 0 {
+			return result < 0
+		}
+		return hosts[i].PublicDNS < hosts[j].PublicDNS
+	})
+
 	return hosts, nil
 }
 

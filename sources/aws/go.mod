@@ -1,4 +1,4 @@
-module github.com/puppetlabs/mimosa/aws-source
+module github.com/puppetlabs/mimosa/sources/aws
 
 go 1.13
 

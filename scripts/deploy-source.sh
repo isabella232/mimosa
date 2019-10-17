@@ -10,12 +10,12 @@ if [ -z "$MIMOSA_GCP_PROJECT" ]; then
 fi
 
 if [ -z "$1" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws config.json";
+    echo "usage: deploy-source.sh <full-source-name> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
     exit 1
 fi
 
 if [ -z "$2" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws config.json";
+    echo "usage: deploy-source.sh <full-source-name> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
     exit 1
 fi
 
@@ -24,18 +24,25 @@ if [ ! -d "$2" ]; then
     exit 1
 fi
 
-if [ ! -f "$3" ]; then
-    echo "config file does not exist: $3";
+if [ ! -d "$3" ]; then
+    echo "world builder source dir does not exist: $3";
+    exit 1
+fi
+
+if [ ! -f "$4" ]; then
+    echo "config file does not exist: $4";
     exit 1
 fi
 
 NAME=$1
 CLOUD_FUNCTION_SOURCE=$2
-CONFIG_FILE=$3
+WORLD_BUILDER_CLOUD_FUNCTION_SOURCE=$3
+CONFIG_FILE=$4
 
-echo "Name        : $NAME"
-echo "Src Dir     : $CLOUD_FUNCTION_SOURCE"
-echo "Config File : $CONFIG_FILE"
+echo "Name                   : $NAME"
+echo "Code Dir               : $CLOUD_FUNCTION_SOURCE"
+echo "World Builder Code Dir : $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE"
+echo "Config File            : $CONFIG_FILE"
 
 echo
 echo "Copying config to bucket ..."
@@ -58,7 +65,7 @@ gcloud functions deploy \
  --runtime go111 \
  --trigger-resource $NAME \
  --trigger-event google.storage.object.finalize \
- --source worldbuilders/awsfinalize \
+ --source $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE \
  --entry-point HandleInstance \
  WorldBuilder-$NAME
 

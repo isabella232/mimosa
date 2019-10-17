@@ -22,7 +22,7 @@ func TestMapInstance(t *testing.T) {
 	b := []byte(someJSON())
 	err := json.Unmarshal(b, &instance)
 	require.NoError(t, err)
-	actual, err := mapInstance(instance)
+	actual := mapInstance(instance)
 	require.NoError(t, err)
 	require.Equal(t, "i-0dac5f409ebb47a71", actual["name"])
 	require.Equal(t, "13.56.178.141", actual["public_ip"])

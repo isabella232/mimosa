@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/puppetlabs/mimosa/sources/aws/libaws"
+	"github.com/puppetlabs/mimosa/sources/gcp/libgcp"
 )
 
 type sourceConfig struct {
@@ -27,9 +27,9 @@ func main() {
 		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
 	}
 
-	err := libaws.Run(bucket)
+	err := libgcp.Run(bucket)
 	if err != nil {
-		log.Fatalf("AWS source failed with error: %v", err)
+		log.Fatalf("GCP source failed with error: %v", err)
 	}
 
 }

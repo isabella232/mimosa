@@ -1,4 +1,4 @@
-package awsfinalize
+package gcpfinalize
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/storage"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	compute "google.golang.org/api/compute/v1"
 )
 
 // GCSEvent is the payload of a GCS event.
@@ -26,7 +26,7 @@ type GCSEvent struct {
 	Updated        time.Time `json:"updated"`
 }
 
-// HandleInstance handles an GCSEvent and looks for an aws ec2 instance
+// HandleInstance handles an GCSEvent and looks for a GCP compute instance
 // gcloud functions deploy HandleInstance --runtime go111 --trigger-resource markf-test-bucket --trigger-event google.storage.object.finalize
 func HandleInstance(ctx context.Context, e GCSEvent) error {
 	meta, err := metadata.FromContext(ctx)
@@ -61,16 +61,16 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	}
 	log.Printf("b: %s\n", b)
 
-	var instance ec2.Instance
+	var instance compute.Instance
 	err = json.Unmarshal(b, &instance)
 	if err != nil {
 		return err
 	}
 	log.Printf("instance: %s\n", b)
 
-	// Check we have an AWS ID since we're very dependent on it
-	if instance.InstanceId == nil {
-		return fmt.Errorf("No AWS instance ID could be found: %v", instance)
+	// Check we have an ID since we're very dependent on it
+	if instance.Id == 0 {
+		return fmt.Errorf("No compute instance ID could be found: %v", instance)
 	}
 
 	// Connect to firestore
@@ -82,10 +82,10 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	// Compute a deterministic hash to use as firestore ID
 	sha := sha1.New()
 	sha.Write([]byte(e.Bucket))
-	sha.Write([]byte(*instance.InstanceId))
+	sha.Write([]byte(fmt.Sprintf("%d", instance.Id)))
 	id := hex.EncodeToString(sha.Sum(nil))
 
-	// Map the AWS instance into a doc to be stored
+	// Map the instance into a doc to be stored
 	i := mapInstance(instance)
 	i["source"] = e.Bucket
 
@@ -99,22 +99,14 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	return err
 }
 
-func mapInstance(instance ec2.Instance) map[string]interface{} {
+func mapInstance(instance compute.Instance) map[string]interface{} {
 	m := map[string]interface{}{
-		"name":  *instance.InstanceId,
-		"since": *instance.LaunchTime,
+		"name":      fmt.Sprintf("%d", instance.Id),
+		"since":     instance.CreationTimestamp,
+		"state":     instance.Status,
+		"public_ip": instance.NetworkInterfaces[0].AccessConfigs[0].NatIP,
 	}
-	setIfNotNull(m, "public_ip", instance.PublicIpAddress)
-	setIfNotNull(m, "public_dns", instance.PublicDnsName)
-	setIfNotNull(m, "state", instance.State.Name)
 	return m
-}
-
-func setIfNotNull(m map[string]interface{}, key string, value *string) {
-	if value == nil {
-		return
-	}
-	m[key] = *value
 }
 
 // read is taken from here

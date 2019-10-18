@@ -4,14 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/puppetlabs/mimosa/sources/aws/libaws"
+	"github.com/puppetlabs/mimosa/sources/aws"
+	"github.com/puppetlabs/mimosa/sources/aws/common"
 )
-
-type sourceConfig struct {
-	Region    string `json:"region,omitempty"`
-	AccessKey string `json:"accessKey,omitempty"`
-	SecretKey string `json:"secretKey,omitempty"`
-}
 
 func main() {
 
@@ -22,14 +17,9 @@ func main() {
 		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable must be set")
 	}
 
-	bucket := os.Getenv("MIMOSA_GCP_BUCKET")
-	if len(bucket) == 0 {
-		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
-	}
-
-	err := libaws.Run(bucket)
+	err := common.Collect(aws.Query)
 	if err != nil {
-		log.Fatalf("AWS source failed with error: %v", err)
+		log.Fatalf("Source failed with error: %v", err)
 	}
 
 }

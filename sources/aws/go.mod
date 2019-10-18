@@ -1,11 +1,9 @@
 module github.com/puppetlabs/mimosa/sources/aws
 
-go 1.13
+go 1.11
 
 require (
-	cloud.google.com/go/storage v1.1.0
+	cloud.google.com/go/storage v1.1.1
 	github.com/aws/aws-sdk-go v1.25.10
-	github.com/dnaeon/go-vcr v1.0.1
-	google.golang.org/api v0.9.0
-	gopkg.in/yaml.v2 v2.2.4
+	github.com/stretchr/testify v1.4.0 // indirect
 )

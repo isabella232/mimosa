@@ -56,7 +56,7 @@ gcloud functions deploy \
  --service-account=$NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com \
  --set-env-vars MIMOSA_GCP_BUCKET=$NAME \
  --source $CLOUD_FUNCTION_SOURCE \
- --entry-point=SourceSubscriber \
+ --entry-point=HandleMessage \
  $NAME
 
 echo

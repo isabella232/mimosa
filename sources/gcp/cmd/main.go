@@ -4,14 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/puppetlabs/mimosa/sources/gcp/libgcp"
+	"github.com/puppetlabs/mimosa/sources/gcp"
+	"github.com/puppetlabs/mimosa/sources/gcp/common"
 )
-
-type sourceConfig struct {
-	Region    string `json:"region,omitempty"`
-	AccessKey string `json:"accessKey,omitempty"`
-	SecretKey string `json:"secretKey,omitempty"`
-}
 
 func main() {
 
@@ -22,14 +17,9 @@ func main() {
 		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable must be set")
 	}
 
-	bucket := os.Getenv("MIMOSA_GCP_BUCKET")
-	if len(bucket) == 0 {
-		log.Fatal("MIMOSA_GCP_BUCKET environment variable must be set")
-	}
-
-	err := libgcp.Run(bucket)
+	err := common.Collect(gcp.Query)
 	if err != nil {
-		log.Fatalf("GCP source failed with error: %v", err)
+		log.Fatalf("Source failed with error: %v", err)
 	}
 
 }

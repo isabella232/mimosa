@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -44,6 +45,10 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	log.Printf("URI: %v\n", uri)
 	uri = fmt.Sprintf("https://storage.googleapis.com/%s/%s", e.Bucket, e.Name)
 	log.Printf("URI: %v\n", uri)
+
+	if strings.HasSuffix(e.Name, ".json") {
+		return nil
+	}
 
 	client, err := storage.NewClient(context.Background())
 	if err != nil {

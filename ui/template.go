@@ -59,7 +59,7 @@ func getHTML() string {
 		  </div>
 -->
 
-		  <table class="ui celled striped table">
+		  <table class="ui collapsing striped table" style="min-width: 100%;">
 			<thead>
 			  <tr>
 				<th>Name</th>

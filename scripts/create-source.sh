@@ -29,13 +29,21 @@ echo "Creating service account ..."
 gcloud iam service-accounts create $NAME --display-name "Source: $1"
 
 echo
-echo "Setting service account permissions ..."
+echo "Setting bucket permissions ..."
 gsutil iam ch serviceAccount:$NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com:objectAdmin gs://$NAME
 echo "Permisions set."
 
 echo
 echo "Creating pub-sub topic ..."
 gcloud pubsub topics create $NAME
+
+#echo
+#echo "Creating pub-sub subscription ..."
+#gcloud pubsub subscriptions create --topic $NAME $NAME
+
+#echo
+#echo "Setting pub-sub subscription permissions ..."
+# gcloud pubsub subscriptions add-iam-policy-binding src-vmpooler-9f63 --member=serviceAccount:src-vmpooler-9f63@mimosa-256008.iam.gserviceaccount.com --role=roles/pubsub.subscriberecho "Permisions set."
 
 echo
 echo "Finished"

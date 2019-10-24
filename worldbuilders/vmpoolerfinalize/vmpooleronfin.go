@@ -1,4 +1,4 @@
-package awsfinalize
+package vmpoolerfinalize
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/storage"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/johnmccabe/go-vmpooler/vm"
 )
 
 // GCSEvent is the payload of a GCS event.
@@ -66,17 +66,12 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	}
 	log.Printf("b: %s\n", b)
 
-	var instance ec2.Instance
+	var instance vm.VM
 	err = json.Unmarshal(b, &instance)
 	if err != nil {
 		return err
 	}
 	log.Printf("instance: %s\n", b)
-
-	// Check we have an AWS ID since we're very dependent on it
-	if instance.InstanceId == nil {
-		return fmt.Errorf("No AWS instance ID could be found: %v", instance)
-	}
 
 	// Connect to firestore
 	fc, err := firestore.NewClient(ctx, firestore.DetectProjectID)
@@ -87,7 +82,7 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	// Compute a deterministic hash to use as firestore ID
 	sha := sha1.New()
 	sha.Write([]byte(e.Bucket))
-	sha.Write([]byte(*instance.InstanceId))
+	sha.Write([]byte(instance.Hostname))
 	id := hex.EncodeToString(sha.Sum(nil))
 
 	// Map the AWS instance into a doc to be stored
@@ -104,15 +99,13 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	return err
 }
 
-func mapInstance(instance ec2.Instance) map[string]interface{} {
-	m := map[string]interface{}{
-		"name":  *instance.InstanceId,
-		"since": *instance.LaunchTime,
+func mapInstance(instance vm.VM) map[string]interface{} {
+	return map[string]interface{}{
+		"name":       instance.Hostname,
+		"public_ip":  instance.Ip,
+		"public_dns": instance.Fqdn,
+		"state":      instance.State,
 	}
-	setIfNotNull(m, "public_ip", instance.PublicIpAddress)
-	setIfNotNull(m, "public_dns", instance.PublicDnsName)
-	setIfNotNull(m, "state", instance.State.Name)
-	return m
 }
 
 func setIfNotNull(m map[string]interface{}, key string, value *string) {

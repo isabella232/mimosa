@@ -13,7 +13,7 @@ import (
 //
 // BUILD AND RUN THE CONTAINER
 //
-// docker build . -t mimosa;docker run -a STDOUT -a STDERR -it --env PORT=8080 -p 8080:8080 mimosa:latest
+// docker build . -t gcr.io/PROJECT_ID/runner;docker run -a STDOUT -a STDERR -it --env PORT=8080 -p 8080:8080 gcr.io/PROJECT_ID/runner
 //
 
 //

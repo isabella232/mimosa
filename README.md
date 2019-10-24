@@ -36,6 +36,39 @@ Deploy the UI:
 
     gcloud functions deploy --entry-point HandleHTTPRequest --runtime go111  --trigger-http --source ui ui
 
+## Cloud Run
+
+To deploy the runner container to Cloud Run you need to perform a one-time setup step to configure docker to authenticate with GCP:
+
+    gcloud auth configure-docker
+
+To build the container (substitute your own GCP project ID):
+
+    cd docker
+    docker build . -t gcr.io/PROJECT_ID/runner
+
+To run locally:
+
+    docker run -a STDOUT -a STDERR -it --env PORT=8080 -p 8080:8080 gcr.io/PROJECT_ID/runner
+
+To test, create a customized payload that contains your AWS instance details and PEM file contents and run:
+
+    curl localhost:8080 --data-binary "@payload.json"
+
+Push to GCR like this:
+
+    docker push gcr.io/mimosa-256008/runner
+
+Deploy in Cloud Run (currently by hand, gcloud commands to follow). Be sure to enable authentication.
+
+Test using this handy Google supplied alias:
+
+    alias gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'\n
+
+Now test the deployment:
+
+    gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
+
 ## Sources
 
 ### Source credentials

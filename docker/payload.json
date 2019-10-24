@@ -1,0 +1,5 @@
+{
+    "user": "ubuntu",
+    "hostname": "ec2-xx-xx-xx-xx.xxxx.compute.amazonaws.com",
+    "keymaterial": "CONTENTS OF PEM FILE HERE"
+}

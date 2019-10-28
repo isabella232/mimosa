@@ -25,7 +25,7 @@ import (
 type payload struct {
 	User        string `json:"user"`
 	Hostname    string `json:"hostname"`
-	KeyMaterial string `json:"keymaterial"`
+	KeyMaterial []byte `json:"keymaterial"`
 }
 
 func main() {
@@ -67,6 +67,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	// Debug
 	log.Printf("User: %s", payload.User)
 	log.Printf("Hostname: %s", payload.Hostname)
+	log.Printf("KeyMaterial: %d", len(payload.KeyMaterial))
 
 	// Write key file
 	pemFile, err := ioutil.TempFile(".", "mimosa-key-")
@@ -80,13 +81,18 @@ func handler(w http.ResponseWriter, req *http.Request) {
 
 	// Run bolt
 	cmd := exec.Command("bolt", "task", "run", "facts",
+		"--format", "json",
 		"--private-key", pemFile.Name(),
 		"--no-host-key-check",
 		"--user", payload.User,
 		"--nodes", payload.Hostname)
 	result, err := cmd.Output()
 	if err != nil {
-		log.Panicf("Failed to run bolt command: %v", err)
+		log.Printf("bolt command exited with an error: %v", err)
+		result, err = json.Marshal(map[string]interface{}{"error": err})
+		if err != nil {
+			log.Fatalf("Marshaling the error failed: %v", err)
+		}
 	}
 	log.Printf("Result: %s", result)
 

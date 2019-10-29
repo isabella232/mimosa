@@ -33,11 +33,18 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 	log.Printf("Firestore ID: %s", id)
 
+	// Bucket holding secrets
+	berglasBucket := os.Getenv("MIMOSA_SECRETS_BUCKET")
+	if len(berglasBucket) == 0 {
+		log.Panic("MIMOSA_SECRETS_BUCKET cannot be empty")
+	}
+	log.Printf("Secrets bucket: %s", berglasBucket)
+
 	// Lookup private key
-	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/%s", id))
+	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/%s", berglasBucket, id))
 	if err != nil {
 		// Try checking for a default key
-		keyMaterial, err = berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/default"))
+		keyMaterial, err = berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/default", berglasBucket))
 		if err != nil {
 			log.Fatal(err)
 		}

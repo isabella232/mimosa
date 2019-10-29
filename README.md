@@ -71,12 +71,12 @@ Now test the deployment:
 
     gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
 
-Deploy the pubsub adaptor with the correct service URL:
+Deploy the pubsub adaptor with the correct service URL and secrets bucket (see below):
 
     gcloud functions deploy \
     --runtime go111 \
     --trigger-topic reusabolt \
-    --set-env-vars MIMOSA_SERVICE_URL=https://runner-xxxx-ew.a.run.app \
+    --set-env-vars MIMOSA_SERVICE_URL=https://runner-xxxx-ew.a.run.app,MIMOSA_SECRETS_BUCKET=<secrets-bucket> \
     --source infra/runner \
     --entry-point=WrapReusabolt \
     WrapReusabolt
@@ -94,7 +94,7 @@ The service account running the "Wrapreusabolt" cloud function (likely "Compute 
 
 Berlgas secrets are referenced like this:
 
-    <bucket-name>/<secret-name>
+    <secrets-bucket>/<secret-name>
 
 e.g.
 
@@ -102,7 +102,7 @@ e.g.
 
 When running bolt, we check for a secret named like this:
 
-    <bucket-name>/<host-firestore-id>
+    <secrets-bucket>/<host-firestore-id>
 
 e.g.
 

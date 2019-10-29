@@ -18,7 +18,7 @@ import (
 
 //Host is a host from firestore
 type Host struct {
-	Name      string
+	ID        string
 	PublicDNS string
 	PublicIP  string
 	State     string
@@ -61,6 +61,7 @@ func getHosts() ([]Host, error) {
 		fmt.Println(d)
 
 		h := hostFromMap(d)
+		h.ID = doc.Ref.ID
 		hosts = append(hosts, h)
 	}
 
@@ -85,9 +86,6 @@ func merge(w io.Writer, hosts []Host) error {
 
 func hostFromMap(m map[string]interface{}) Host {
 	h := Host{}
-	if v, ok := m["name"]; ok {
-		h.Name = v.(string)
-	}
 	if v, ok := m["public_dns"]; ok {
 		h.PublicDNS = v.(string)
 	}

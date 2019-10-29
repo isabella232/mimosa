@@ -59,7 +59,9 @@ Push to GCR like this:
 
     docker push gcr.io/mimosa-256008/runner
 
-Deploy in Cloud Run (currently by hand, gcloud commands to follow). Be sure to enable authentication.
+Deploy in Cloud Run:
+
+    gcloud beta run deploy --image gcr.io/mimosa-256008/runner --platform managed --region europe-west1 --no-allow-unauthenticated runner
 
 Test using this handy Google supplied alias:
 
@@ -68,6 +70,53 @@ Test using this handy Google supplied alias:
 Now test the deployment:
 
     gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
+
+Deploy the pubsub adaptor with the correct service URL and secrets bucket (see below):
+
+    gcloud functions deploy \
+    --runtime go111 \
+    --trigger-topic reusabolt \
+    --set-env-vars MIMOSA_SERVICE_URL=https://runner-xxxx-ew.a.run.app,MIMOSA_SECRETS_BUCKET=<secrets-bucket> \
+    --source infra/runner \
+    --entry-point=WrapReusabolt \
+    WrapReusabolt
+
+## Secrets
+
+We use [berglas](https://github.com/GoogleCloudPlatform/berglas) for secrets which should be installed locally as described in their README to allow secrets to be added to Mimosa.
+
+Once the berglas bootstrap process has completed there'll be a new KMS key and storage bucket.
+
+The service account running the "Wrapreusabolt" cloud function (likely "Compute Engine default service account") needs some permissions:
+
+* Storage Viewer on the berglas bucket: `gsutil acl ch -u <service-account-email>:R gs://<bucket-name>`
+* Cloud KMS CryptoKey Decryptor on the berglas key (https://console.cloud.google.com/security/kms)
+
+Berlgas secrets are referenced like this:
+
+    <secrets-bucket>/<secret-name>
+
+e.g.
+
+    mimosa-berglas/foo
+
+When running bolt, we check for a secret named like this:
+
+    <secrets-bucket>/<host-firestore-id>
+
+e.g.
+
+    mimosa-berglas/a8e1e136ae5ea7c143a345e99aae843f22d6e5b1
+
+If none is found, we fall back to the "default" secret:
+
+    mimosa-berglas/default
+
+This means you can associate a key with each host but you can also simplify development by using a single key for all hosts and uploading it as the default secret.
+
+Upload a secret, like the pem file you got from AWS, as follows. Using "edit" helps avoid problems with your shell mangling your private key:
+
+    EDITOR="code -w" berglas edit mimosa-berglas/default
 
 ## Sources
 

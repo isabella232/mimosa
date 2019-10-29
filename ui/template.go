@@ -62,9 +62,9 @@ func getHTML() string {
 		  <table class="ui collapsing striped table" style="min-width: 100%;">
 			<thead>
 			  <tr>
-				<th>Name</th>
-				<th>PublicDNS</th>
-				<th>PublicIP</th>
+				<th>ID</th>
+				<th>Hostname</th>
+				<th>IP</th>
 				<th>State</th>
 				<th>Source</th>
 			  </tr>
@@ -72,7 +72,7 @@ func getHTML() string {
 			<tbody>
 			  {{range .}}
 			  <tr>
-				<td>{{.Name}}</td>
+				<td>{{.ID}}</td>
 				<td>{{.PublicDNS}}</td>
 				<td>{{.PublicIP}}</td>
 				<td>{{.State}}</td>

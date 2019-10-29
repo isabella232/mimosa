@@ -55,19 +55,21 @@ func handler(w http.ResponseWriter, req *http.Request) {
 
 	// Check payload
 	if payload.User == "" {
-		log.Panic("User name cannot be empty")
+		log.Panic("User cannot be empty")
 	}
 	if payload.Hostname == "" {
-		log.Panic("Hostname name cannot be empty")
+		log.Panic("Hostname cannot be empty")
 	}
 	if len(payload.KeyMaterial) == 0 {
-		log.Panic("KeyMaterial name cannot be empty")
+		log.Panic("KeyMaterial cannot be empty")
+	}
+	if len(payload.KeyMaterial) < 100 {
+		log.Print("Warning - KeyMaterial is suspiciously short")
 	}
 
 	// Debug
 	log.Printf("User: %s", payload.User)
 	log.Printf("Hostname: %s", payload.Hostname)
-	log.Printf("KeyMaterial: %d", len(payload.KeyMaterial))
 
 	// Write key file
 	pemFile, err := ioutil.TempFile(".", "mimosa-key-")

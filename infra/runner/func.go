@@ -34,15 +34,21 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	log.Printf("Firestore ID: %s", id)
 
 	// Lookup private key
-	keyMMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/%s", id))
+	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/%s", id))
 	if err != nil {
 		// Try checking for a default key
-		keyMMaterial, err = berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/default"))
+		keyMaterial, err = berglas.Resolve(ctx, fmt.Sprintf("berglas://mimosa-berglas/default"))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("Found key in berglas. Length: %d", len(keyMMaterial))
+	log.Printf("Found key material in berglas")
+	if len(keyMaterial) == 0 {
+		log.Panic("Key material cannot be empty")
+	}
+	if len(keyMaterial) < 100 {
+		log.Print("Warning - Key material is suspiciously short")
+	}
 
 	// Use a specified project if there is one or detect if running inside GCP
 	project := os.Getenv("MIMOSA_GCP_PROJECT")
@@ -69,7 +75,7 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	payload := payload{
 		User:        "ubuntu",
 		Hostname:    hostname.(string),
-		KeyMaterial: keyMMaterial,
+		KeyMaterial: keyMaterial,
 	}
 
 	// Marshal the payload
@@ -78,8 +84,14 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 		return err
 	}
 
+	// Look up the service URL
+	serviceURL := os.Getenv("MIMOSA_SERVICE_URL")
+	if len(serviceURL) == 0 {
+		log.Panic("Service URL cannot be empty")
+	}
+	log.Printf("Service URL: %s", serviceURL)
+
 	// Run Cloud Run function
-	serviceURL := "https://runner-tfmdd2vwoq-ew.a.run.app"
 	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", serviceURL)
 	idToken, err := metadata.Get(tokenURL)
 	if err != nil {
@@ -88,20 +100,27 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	body := bytes.NewReader(bs)
 	req, err := http.NewRequest("POST", serviceURL, body)
 	if err != nil {
-		log.Fatalf("failed to create get request: %+v", err)
+		log.Fatalf("failed to create POST request: %+v", err)
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", idToken))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatalf("failed to execute get request: %+v", err)
+		log.Fatalf("failed to execute POST request: %+v", err)
 	}
 	defer response.Body.Close()
-	bs, err = ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalf("failed to read response body: %+v", err)
+
+	// Check status
+	if response.StatusCode != 200 {
+		log.Fatalf("POST response did not return 200 status: %d", response.StatusCode)
 	}
 
-	log.Printf("%s", bs)
+	// Read body
+	bs, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatalf("failed to read POST response body: %+v", err)
+	}
+
+	log.Printf("POST response body: %s", bs)
 
 	// Unmarshal result
 	var result map[string]interface{}

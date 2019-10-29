@@ -71,11 +71,12 @@ Now test the deployment:
 
     gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
 
-Deploy the pubsub adaptor:
+Deploy the pubsub adaptor with the correct service URL:
 
     gcloud functions deploy \
     --runtime go111 \
     --trigger-topic reusabolt \
+    --set-env-vars MIMOSA_SERVICE_URL=https://runner-xxxx-ew.a.run.app \
     --source infra/runner \
     --entry-point=WrapReusabolt \
     WrapReusabolt

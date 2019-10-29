@@ -89,7 +89,7 @@ Once the berglas bootstrap process has completed there'll be a new KMS key and s
 
 The service account running the "Wrapreusabolt" cloud function (likely "Compute Engine default service account") needs some permissions:
 
-* Storage Viewer on the berglas bucket (https://console.cloud.google.com/storage/browser)
+* Storage Viewer on the berglas bucket: `gsutil acl ch -u <service-account-email>:R gs://<bucket-name>`
 * Cloud KMS CryptoKey Decryptor on the berglas key (https://console.cloud.google.com/security/kms)
 
 Berlgas secrets are referenced like this:

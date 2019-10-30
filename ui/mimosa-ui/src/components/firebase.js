@@ -17,6 +17,6 @@ firebase.initializeApp(conf);
 //   hd: "puppet.com"
 // });
 
-export const provider = new firebase.auth.GoogleAuthProvider();
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
 export const auth = firebase.auth();
 export default firebase;

@@ -4,7 +4,7 @@ import MimosaHeader from './components/MimosaHeader';
 import DataTable from './components/DataTable';
 import { Component } from 'react';
 import { Container, Divider, Button } from 'semantic-ui-react';
-import firebase, { firestore, provider } from './components/firebase.js';
+import firebase, { googleProvider } from './components/firebase.js';
 class App extends Component {
   constructor(props) {
     super(props);
@@ -14,7 +14,7 @@ class App extends Component {
   }
 
   handle_login = () => {
-    firebase.auth().signInWithPopup(provider).then((result) => {
+    firebase.auth().signInWithPopup(googleProvider).then((result) => {
       var token = result.credential.accessToken;
       var user = result.user;
       this.setState({
@@ -22,6 +22,22 @@ class App extends Component {
       });
     }).catch((error) => {
       alert("Error during signin")
+      this.setState({
+        loggedIn: false,
+      })
+    });
+  }
+
+  handle_email_login = () => {
+    firebase.auth().signInWithEmailAndPassword("alice@example.com", "alicealice").then((result) => {
+      // var token = result.credential.accessToken;
+      // var user = result.user;
+      this.setState({
+        loggedIn: true,
+      });
+    }).catch((error) => {
+      alert("Error during signin")
+      alert(error)
       this.setState({
         loggedIn: false,
       })
@@ -44,19 +60,16 @@ class App extends Component {
         <MimosaHeader />
         <Divider />
         {loggedIn ? (
-          <Button onClick={this.handle_logout}>Logout</Button>
-        ) : (
-          <Button onClick={this.handle_login}>Login</Button>
-        )}
-        {loggedIn ? (
           <Container>
+            <Button onClick={this.handle_logout}>Logout</Button>
             <DataTable />
           </Container>
         ) : (
-          <Container>
-            <p>Please Sign in to view mimosa data</p>
-          </Container>
-        )}
+            <Container>
+              <Button onClick={this.handle_login}>Login with Google</Button>
+              <Button onClick={this.handle_email_login}>Login with Email</Button>
+            </Container>
+          )}
       </div>
     );
   }

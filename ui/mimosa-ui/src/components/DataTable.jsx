@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import firebase, { firestore, provider } from './firebase.js';
 import { Table, Button } from 'semantic-ui-react';
@@ -17,60 +18,62 @@ class DataTable extends React.Component {
       querySnapshot.forEach((doc) => {
         stagingArray.push(doc.data());
       });
+      console.log("sorting firebase data")
+      stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"])
       this.setState({
         data: stagingArray,
       });
     });
   }
-  componentDidMount(){
+  componentDidMount() {
     //fakeData to be used for styling, visual fixes, rather than hitting DB
-    let fakeData = [
-      {
-        name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
-        public_dns: "12234234590u320495u2039u4534",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "me, myself and i",
-        state: "running",
-      },
-      {
-        name: "ksdfoijasd;fmas;odfj;ofj",
-        public_dns: "123psdfosjdf4",
-        public_ip: "0.0.0.1:/255",
-        since: {
-          seconds: 1234,
-        },
-        source: "vmpooler",
-        state: "terminated",
-      },
-      {
-        name: "asdc;amsd;kcnaskcn",
-        public_dns: "1234",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "bwabeabeaa",
-        state: "running",
-      },
-      {
-        name: "sdfasjo;fdjoais;djfo",
-        public_dns: "1234",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "sdfasdfasdfasdf",
-        state: "terminated",
-      }
-    ]
-    // let pulledData = this.pullData();
-    this.setState({ data: fakeData,});
+    // let fakeData = [
+    //   {
+    //     name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
+    //     public_dns: "12234234590u320495u2039u4534",
+    //     public_ip: "0.0.0.1",
+    //     since: {
+    //       seconds: 1234,
+    //     },
+    //     source: "me, myself and i",
+    //     state: "running",
+    //   },
+    //   {
+    //     name: "ksdfoijasd;fmas;odfj;ofj",
+    //     public_dns: "123psdfosjdf4",
+    //     public_ip: "0.0.0.1:/255",
+    //     since: {
+    //       seconds: 1234,
+    //     },
+    //     source: "vmpooler",
+    //     state: "terminated",
+    //   },
+    //   {
+    //     name: "asdc;amsd;kcnaskcn",
+    //     public_dns: "1234",
+    //     public_ip: "0.0.0.1",
+    //     since: {
+    //       seconds: 1234,
+    //     },
+    //     source: "bwabeabeaa",
+    //     state: "running",
+    //   },
+    //   {
+    //     name: "sdfasjo;fdjoais;djfo",
+    //     public_dns: "1234",
+    //     public_ip: "0.0.0.1",
+    //     since: {
+    //       seconds: 1234,
+    //     },
+    //     source: "sdfasdfasdfasdf",
+    //     state: "terminated",
+    //   }
+    // ]
+    let pulledData = this.pullData();
+    this.setState({ data: pulledData, });
   }
   render() {
-    var {data} = this.state;
+    var { data } = this.state;
     return (
       <Table className="table">
         <Table.Header>
@@ -87,11 +90,11 @@ class DataTable extends React.Component {
           {data && data.map((listVal, index) => {
             var rowState, showButton;
             if (listVal.state === 'terminated') {
-              rowState=false;
-              showButton=false;
+              rowState = false;
+              showButton = false;
             } else {
-              rowState=true;
-              showButton=true;
+              rowState = true;
+              showButton = true;
             }
             return (
               <Table.Row error={!rowState} positive={rowState} key={index}>
@@ -105,10 +108,10 @@ class DataTable extends React.Component {
                     <Button inverted color='violet'>Run Bolt</Button>
                   </Table.Cell>
                 ) : (
-                  <Table.Cell>
-                    -
+                    <Table.Cell>
+                      -
                   </Table.Cell>
-                )}
+                  )}
               </Table.Row>
             )
           })}

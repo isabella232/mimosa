@@ -60,13 +60,13 @@ class App extends Component {
 
   handle_google_login = () => {
     firebase.auth().signInWithPopup(googleProvider).then((result) => {
-      var token = result.credential.accessToken;
-      var user = result.user;
+      // var token = result.credential.accessToken;
+      // var user = result.user;
       this.setState({
         loggedIn: true,
       });
     }).catch((error) => {
-      alert("Error during signin")
+      alert(error)
       this.setState({
         loggedIn: false,
       })
@@ -101,10 +101,9 @@ class App extends Component {
     const { loggedIn } = this.state;
     return (
       <div className="App">
-        <MimosaHeader />
-        <Divider />
         {loggedIn ? (
           <Container>
+            <Divider />
             <Button onClick={this.handle_logout}>Logout</Button>
             <DataTable />
           </Container>
@@ -112,7 +111,8 @@ class App extends Component {
             <Container>
               <this.LoginForm />
             </Container>
-          )}
+          )
+        }
       </div>
     );
   }

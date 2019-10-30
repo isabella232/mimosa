@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Segment } from 'semantic-ui-react';
+import { Header, Segment, Icon } from 'semantic-ui-react';
 
 
 class MimosaHeader extends React.Component {
@@ -7,7 +7,10 @@ class MimosaHeader extends React.Component {
     return (
       <Segment inverted>
         <Header inverted color="grey" as='h1' textAlign='center'>
-          <Header.Content>mimosa</Header.Content>
+          <Header.Content>
+            <Icon name="cocktail" />
+            mimosa
+          </Header.Content>
         </Header>
       </Segment>
     )

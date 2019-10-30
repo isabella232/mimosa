@@ -3,7 +3,16 @@ import 'semantic-ui-css/semantic.min.css'
 import MimosaHeader from './components/MimosaHeader';
 import DataTable from './components/DataTable';
 import { Component } from 'react';
-import { Button, Form, Grid, Header, Image, Message, Segment, Container, Divider, Icon } from 'semantic-ui-react';
+import { Button,
+         Form,
+         Grid,
+         Header,
+         Segment,
+         Container,
+         Divider,
+         Icon,
+         Sidebar
+        } from 'semantic-ui-react';
 import firebase, { googleProvider } from './components/firebase.js';
 class App extends Component {
   constructor(props) {
@@ -33,7 +42,7 @@ class App extends Component {
 
             <Button onClick={this.handle_email_login} color='teal' fluid size='large'>
               Login
-          </Button>
+            </Button>
 
             <Divider />
             <Button onClick={this.handle_google_login} color='teal' fluid size='large'>
@@ -101,6 +110,7 @@ class App extends Component {
     const { loggedIn } = this.state;
     return (
       <div className="App">
+      <MimosaHeader />
         {loggedIn ? (
           <Container>
             <Divider />

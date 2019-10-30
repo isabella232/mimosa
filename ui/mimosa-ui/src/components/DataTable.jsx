@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
-import firebase, { firestore, provider } from './firebase.js';
-import { Table, Button } from 'semantic-ui-react';
+import firebase, { firestore, provider, functions } from './firebase.js';
+import { Table, Button, Modal } from 'semantic-ui-react';
 
 var db = firebase.firestore();
 
@@ -10,24 +10,44 @@ class DataTable extends React.Component {
     super(props);
     this.state = {
       data: [{}],
+      index: [],
+      outputArray: [],
+      cloudFunctionResult: '',
     }
   }
   pullData = () => {
-    var stagingArray = [];
+    var stagingArray = [],
+        outputArray = [];
     db.collection("hosts").get().then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         stagingArray.push(doc.data());
+        outputArray.push('');
       });
       console.log("sorting firebase data")
       stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"])
       this.setState({
         data: stagingArray,
+        output: outputArray,
       });
     });
   }
+  callCloudFunction = (functionName, index) => {
+    var cf = firebase.functions().httpsCallable(functionName);
+    cf().then((result) => {
+      console.log(result.data, index);
+      var stagedOutput = this.state.outputArray;
+      stagedOutput[index] = result.data;
+      this.setState({
+        cloudFunctionResult: result.data, 
+        outputArray: stagedOutput,
+      });
+    }).catch((error) => {
+      console.log(error);
+    })
+  }
   componentDidMount() {
     //fakeData to be used for styling, visual fixes, rather than hitting DB
-    // let fakeData = [
+    let fakeData = [
     //   {
     //     name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
     //     public_dns: "12234234590u320495u2039u4534",
@@ -68,12 +88,12 @@ class DataTable extends React.Component {
     //     source: "sdfasdfasdfasdf",
     //     state: "terminated",
     //   }
-    // ]
+    ]
     let pulledData = this.pullData();
     this.setState({ data: pulledData, });
   }
   render() {
-    var { data } = this.state;
+    var { data, cloudFunctionResult, outputArray } = this.state;
     return (
       <Table className="table">
         <Table.Header>
@@ -83,7 +103,8 @@ class DataTable extends React.Component {
             <Table.HeaderCell>IP Address</Table.HeaderCell>
             <Table.HeaderCell>Source</Table.HeaderCell>
             <Table.HeaderCell>State</Table.HeaderCell>
-            <Table.HeaderCell>Run CF</Table.HeaderCell>
+            <Table.HeaderCell>Run Task</Table.HeaderCell>
+            <Table.HeaderCell>Run Result</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -105,13 +126,22 @@ class DataTable extends React.Component {
                 <Table.Cell>{listVal.state}</Table.Cell>
                 {showButton ? (
                   <Table.Cell>
-                    <Button inverted color='violet'>Run Bolt</Button>
+                    <Button inverted color='violet' onClick={() => this.callCloudFunction('RunTask', index)}>Run Task</Button>
                   </Table.Cell>
                 ) : (
                     <Table.Cell>
                       -
                   </Table.Cell>
                   )}
+                {showButton ? (
+                  <Table.Cell>
+                    <p>{outputArray[index]}</p>
+                  </Table.Cell>
+                ) : (
+                  <Table.Cell>
+                    -
+                  </Table.Cell>
+                )}
               </Table.Row>
             )
           })}

@@ -58,7 +58,7 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 
 	// Use a specified project if there is one or detect if running inside GCP
-	project := os.Getenv("MIMOSA_GCP_PROJECT")
+	project := os.Getenv("GCP_PROJECT")
 	if len(project) == 0 {
 		project = firestore.DetectProjectID
 	}

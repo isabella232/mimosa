@@ -81,6 +81,16 @@ Deploy the pubsub adaptor with the correct service URL and secrets bucket (see b
     --entry-point=WrapReusabolt \
     WrapReusabolt
 
+Deploy the function that the UI uses to run tasks:
+
+    gcloud functions deploy \
+    --allow-unauthenticated \
+    --runtime go111 \
+    --trigger-http \
+    --source infra/runtask \
+    --entry-point=RunTask \
+    RunTask
+
 ## Secrets
 
 We use [berglas](https://github.com/GoogleCloudPlatform/berglas) for secrets which should be installed locally as described in their README to allow secrets to be added to Mimosa.

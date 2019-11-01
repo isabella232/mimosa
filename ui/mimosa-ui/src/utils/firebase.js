@@ -12,6 +12,8 @@ const conf = {
 
 firebase.initializeApp(conf);
 
+// can use below to limit access to <email>@puppet.com
+
 // export const provider = new firebase.auth.GoogleAuthProvider();
 // provider.setCustomParameters({
 //   hd: "puppet.com"

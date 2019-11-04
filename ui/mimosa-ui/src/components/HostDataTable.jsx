@@ -38,56 +38,78 @@ class HostDataTable extends React.Component {
     });
   }
   // Call cloud function, since we don't expect result we don't do anything
-  callCloudFunction = (functionName) => {
-    var cf = firebase.functions().httpsCallable(functionName);
-    cf().then(() => {
-    }).catch((error) => {
-      alert(error);
-    })
+  callCloudFunction = (functionName, data) => {
+
+    firebase.auth().currentUser.getIdToken().then(function (idToken) {
+      // ACCESS TOKEN SHOULD VBE ADDED AS A BEARER TOKEN
+      fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        // credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
+        body: data// body data type must match "Content-Type" header
+      }).then(response => {
+        console.log(response.status)
+        console.log(response.text())
+      })
+        .catch(error => {
+          console.error('Error during Mimosa:', error);
+        });
+
+    }).catch(function (error) {
+      console.error('Error during Mimosa:', error);
+    });
+
   }
   componentDidMount() {
     //fakeData to be used for styling, visual fixes, rather than hitting DB
     // let fakeData = [
-      // {
-      //   name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
-      //   public_dns: "12234234590u320495u2039u4534",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "me, myself and i",
-      //   state: "running",
-      // },
-      // {
-      //   name: "ksdfoijasd;fmas;odfj;ofj",
-      //   public_dns: "123psdfosjdf4",
-      //   public_ip: "0.0.0.1:/255",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "vmpooler",
-      //   state: "terminated",
-      // },
-      // {
-      //   name: "asdc;amsd;kcnaskcn",
-      //   public_dns: "1234",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "bwabeabeaa",
-      //   state: "running",
-      // },
-      // {
-      //   name: "sdfasjo;fdjoais;djfo",
-      //   public_dns: "1234",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "sdfasdfasdfasdf",
-      //   state: "terminated",
-      // }
+    // {
+    //   name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
+    //   public_dns: "12234234590u320495u2039u4534",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "me, myself and i",
+    //   state: "running",
+    // },
+    // {
+    //   name: "ksdfoijasd;fmas;odfj;ofj",
+    //   public_dns: "123psdfosjdf4",
+    //   public_ip: "0.0.0.1:/255",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "vmpooler",
+    //   state: "terminated",
+    // },
+    // {
+    //   name: "asdc;amsd;kcnaskcn",
+    //   public_dns: "1234",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "bwabeabeaa",
+    //   state: "running",
+    // },
+    // {
+    //   name: "sdfasjo;fdjoais;djfo",
+    //   public_dns: "1234",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "sdfasdfasdfasdf",
+    //   state: "terminated",
+    // }
     // ]
     // this.setState({ data: fakeData, });
     this.pullHostData();
@@ -98,7 +120,7 @@ class HostDataTable extends React.Component {
      * Iterate through firestore data and render table
      * the document ID is used in Task Output button
      * to pass it to the Task view
-     * 
+     *
      * Also Run Task and Task Output buttons will not
      * render unless host is running (should add other checks in future)
      */
@@ -134,7 +156,7 @@ class HostDataTable extends React.Component {
                 <Table.Cell>{listVal.state}</Table.Cell>
                 {showButton ? (
                   <Table.Cell>
-                    <Button color='violet' onClick={() => this.callCloudFunction('RunTask')}>Run Task</Button>
+                    <Button color='violet' onClick={() => this.callCloudFunction('runtask', listVal.id)}>Run Task</Button>
                   </Table.Cell>
                 ) : (
                     <Table.Cell>
@@ -148,10 +170,10 @@ class HostDataTable extends React.Component {
                   </Button>
                   </Table.Cell>
                 ) : (
-                  <Table.Cell>
-                    -
+                    <Table.Cell>
+                      -
                   </Table.Cell>
-                )}
+                  )}
               </Table.Row>
             )
           })}

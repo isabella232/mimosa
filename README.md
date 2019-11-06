@@ -84,12 +84,55 @@ Deploy the pubsub adaptor with the correct service URL and secrets bucket (see b
 Deploy the function that the UI uses to run tasks:
 
     gcloud functions deploy \
-    --allow-unauthenticated \
+    --no-allow-unauthenticated \
     --runtime go111 \
     --trigger-http \
     --source infra/runtask \
     --entry-point=RunTask \
-    RunTask
+    runtask
+
+## Extensible Service Proxy (ESP)
+
+Deploy ESP to handle auth and CORS for all API calls.
+
+Before deployment make sure these services are enabled:
+
+    gcloud services enable servicemanagement.googleapis.com\t
+    gcloud services enable servicecontrol.googleapis.com\t
+    gcloud services enable endpoints.googleapis.com\t
+
+Deploy the ESP to Cloud Run:
+
+    gcloud beta run deploy mimosa-esp \
+    --image="gcr.io/endpoints-release/endpoints-runtime-serverless:1" \
+    --allow-unauthenticated \
+
+Create the endpoint service:
+
+    gcloud endpoints services deploy openapi/openapi-mimosa.yaml
+
+If you see this error:
+
+    Serverless ESP expects ENDPOINTS_SERVICE_NAME in environment variables.
+
+Then deploy again but this time specifying the ENDPOINTS_SERVICE_NAME env var:
+
+    gcloud beta run deploy mimosa-esp \
+    --image="gcr.io/endpoints-release/endpoints-runtime-serverless:1" \
+    --allow-unauthenticated \
+    --set-env-vars ENDPOINTS_SERVICE_NAME=mimosa-esp-tfmdd2vwoq-uc.a.run.app,ESP_ARGS=--cors_preset=basic,--cors_allow_origin=localhost
+
+Test your endpont is authenticating calls by making an unauthenticated curl request:
+
+    curl https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/hello
+
+You should see a 401 error.
+
+Now try an authenticated call using a Firebase token:
+
+    export FIREBASE_TOKEN=`curl 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCQieKOS6B36ut_o5n0loeW8rXetEqXnb0' -H 'Content-Type: application/json' --data-binary '{"email":"xxxx@example.com","password":"xxxx","returnSecureToken":true}'| jq -r .idToken`
+
+    curl --header "Authorization: Bearer $FIREBASE_TOKEN" https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/hello
 
 ## Secrets
 

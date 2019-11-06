@@ -17,32 +17,6 @@ securityDefinitions:
     x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
     x-google-audiences: "mimosa-256008"
 paths:
-  /hello:
-    get:
-      summary: Greet a user
-      operationId: helloGet
-      x-google-backend:
-        address: https://us-central1-mimosa-256008.cloudfunctions.net/hello
-      responses:
-        "200":
-          description: A successful response
-          schema:
-            type: string
-    post:
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - text/xml
-        - text/html
-      operationId: helloPost
-      x-google-backend:
-        address: https://us-central1-mimosa-256008.cloudfunctions.net/hello
-      responses:
-        "200":
-          description: A successful response
-          schema:
-            type: string
   /runtask:
     post:
       consumes:

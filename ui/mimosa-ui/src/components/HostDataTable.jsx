@@ -11,29 +11,37 @@ class HostDataTable extends React.Component {
     super(props);
     this.state = {
       data: [{}],
+      cap: undefined,
     }
+
+    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+      this.state.cap = token.claims.cap
+    })
+
   }
 
   pullHostData = () => {
-    var stagingArray = [];
-    // onSnapshot will update view if firestore updates
-    db.collection("hosts").onSnapshot((querySnapshot) => {
-      // reset data to avoid duplication
-      this.setState({
-        data: [{}],
-      });
-      // iterate through docs, add id to doc
-      // add doc to array
-      querySnapshot.forEach((doc) => {
-        var rowData = doc.data();
-        rowData["id"] = doc.id;
-        stagingArray.push(rowData);
-      });
+    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+      var stagingArray = [];
+      // onSnapshot will update view if firestore updates
+      db.collection("tenants").doc(token.claims.org).collection("hosts").onSnapshot((querySnapshot) => {
+        // reset data to avoid duplication
+        this.setState({
+          data: [{}],
+        });
+        // iterate through docs, add id to doc
+        // add doc to array
+        querySnapshot.forEach((doc) => {
+          var rowData = doc.data();
+          rowData["id"] = doc.id;
+          stagingArray.push(rowData);
+        });
 
-      // sort and store array in state
-      stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
-      this.setState({
-        data: stagingArray,
+        // sort and store array in state
+        stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
+        this.setState({
+          data: stagingArray,
+        });
       });
     });
   }
@@ -48,57 +56,57 @@ class HostDataTable extends React.Component {
   componentDidMount() {
     //fakeData to be used for styling, visual fixes, rather than hitting DB
     // let fakeData = [
-      // {
-      //   name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
-      //   public_dns: "12234234590u320495u2039u4534",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "me, myself and i",
-      //   state: "running",
-      // },
-      // {
-      //   name: "ksdfoijasd;fmas;odfj;ofj",
-      //   public_dns: "123psdfosjdf4",
-      //   public_ip: "0.0.0.1:/255",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "vmpooler",
-      //   state: "terminated",
-      // },
-      // {
-      //   name: "asdc;amsd;kcnaskcn",
-      //   public_dns: "1234",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "bwabeabeaa",
-      //   state: "running",
-      // },
-      // {
-      //   name: "sdfasjo;fdjoais;djfo",
-      //   public_dns: "1234",
-      //   public_ip: "0.0.0.1",
-      //   since: {
-      //     seconds: 1234,
-      //   },
-      //   source: "sdfasdfasdfasdf",
-      //   state: "terminated",
-      // }
+    // {
+    //   name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
+    //   public_dns: "12234234590u320495u2039u4534",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "me, myself and i",
+    //   state: "running",
+    // },
+    // {
+    //   name: "ksdfoijasd;fmas;odfj;ofj",
+    //   public_dns: "123psdfosjdf4",
+    //   public_ip: "0.0.0.1:/255",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "vmpooler",
+    //   state: "terminated",
+    // },
+    // {
+    //   name: "asdc;amsd;kcnaskcn",
+    //   public_dns: "1234",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "bwabeabeaa",
+    //   state: "running",
+    // },
+    // {
+    //   name: "sdfasjo;fdjoais;djfo",
+    //   public_dns: "1234",
+    //   public_ip: "0.0.0.1",
+    //   since: {
+    //     seconds: 1234,
+    //   },
+    //   source: "sdfasdfasdfasdf",
+    //   state: "terminated",
+    // }
     // ]
     // this.setState({ data: fakeData, });
     this.pullHostData();
   }
   render() {
-    var { data } = this.state;
+    var { data, cap } = this.state;
     /**
      * Iterate through firestore data and render table
      * the document ID is used in Task Output button
      * to pass it to the Task view
-     * 
+     *
      * Also Run Task and Task Output buttons will not
      * render unless host is running (should add other checks in future)
      */
@@ -123,7 +131,7 @@ class HostDataTable extends React.Component {
               showButton = false;
             } else {
               rowState = true;
-              showButton = true;
+              showButton = cap !== undefined && cap.includes("run");
             }
             return (
               <Table.Row error={!rowState} positive={rowState}>
@@ -148,10 +156,10 @@ class HostDataTable extends React.Component {
                   </Button>
                   </Table.Cell>
                 ) : (
-                  <Table.Cell>
-                    -
+                    <Table.Cell>
+                      -
                   </Table.Cell>
-                )}
+                  )}
               </Table.Row>
             )
           })}

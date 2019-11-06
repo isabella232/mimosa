@@ -10,36 +10,38 @@ if [ -z "$MIMOSA_GCP_PROJECT" ]; then
 fi
 
 if [ -z "$1" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
+    echo "usage: deploy-source.sh <full-source-name> <tenant> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
     exit 1
 fi
 
 if [ -z "$2" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
-    exit 1
-fi
-
-if [ ! -d "$2" ]; then
-    echo "source dir does not exist: $2";
+    echo "usage: deploy-source.sh <full-source-name> <tenant> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
     exit 1
 fi
 
 if [ ! -d "$3" ]; then
-    echo "world builder source dir does not exist: $3";
+    echo "source dir does not exist: $3";
     exit 1
 fi
 
-if [ ! -f "$4" ]; then
-    echo "config file does not exist: $4";
+if [ ! -d "$4" ]; then
+    echo "world builder source dir does not exist: $4";
+    exit 1
+fi
+
+if [ ! -f "$5" ]; then
+    echo "config file does not exist: $5";
     exit 1
 fi
 
 NAME=$1
-CLOUD_FUNCTION_SOURCE=$2
-WORLD_BUILDER_CLOUD_FUNCTION_SOURCE=$3
-CONFIG_FILE=$4
+TENANT=$2
+CLOUD_FUNCTION_SOURCE=$3
+WORLD_BUILDER_CLOUD_FUNCTION_SOURCE=$4
+CONFIG_FILE=$5
 
-echo "Name                   : $NAME"
+echo "Source Name            : $NAME"
+echo "Tenant                 : $TENANT"
 echo "Code Dir               : $CLOUD_FUNCTION_SOURCE"
 echo "World Builder Code Dir : $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE"
 echo "Config File            : $CONFIG_FILE"
@@ -53,8 +55,7 @@ echo "Deploying source cloud function ..."
 gcloud functions deploy \
  --runtime go111 \
  --trigger-topic $NAME \
- --service-account=$NAME@$MIMOSA_GCP_PROJECT.iam.gserviceaccount.com \
- --set-env-vars MIMOSA_GCP_BUCKET=$NAME \
+ --set-env-vars MIMOSA_GCP_BUCKET=$NAME, \
  --source $CLOUD_FUNCTION_SOURCE \
  --entry-point=HandleMessage \
  $NAME
@@ -65,6 +66,7 @@ gcloud functions deploy \
  --runtime go111 \
  --trigger-resource $NAME \
  --trigger-event google.storage.object.finalize \
+ --set-env-vars MIMOSA_TENANT=$TENANT, \
  --source $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE \
  --entry-point HandleInstance \
  WorldBuilder-$NAME

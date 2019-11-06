@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -49,6 +50,12 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	if strings.HasSuffix(e.Name, ".json") {
 		return nil
 	}
+
+	tenant := os.Getenv("MIMOSA_TENANT")
+	if len(tenant) == 0 {
+		return fmt.Errorf("MIMOSA_TENANT must be defined")
+	}
+	log.Printf("Tenant: %s", tenant)
 
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
@@ -95,7 +102,7 @@ func HandleInstance(ctx context.Context, e GCSEvent) error {
 	i["source"] = e.Bucket
 
 	// Write the doc to the "hosts" collection
-	hosts := fc.Collection("hosts")
+	hosts := fc.Collection("tenants").Doc(tenant).Collection("hosts")
 	result, err := hosts.Doc(id).Set(context.Background(), i)
 	if err != nil {
 		return err

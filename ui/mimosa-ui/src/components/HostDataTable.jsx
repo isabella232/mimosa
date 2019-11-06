@@ -11,29 +11,37 @@ class HostDataTable extends React.Component {
     super(props);
     this.state = {
       data: [{}],
+      cap: undefined,
     }
+
+    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+      this.state.cap = token.claims.cap
+    })
+
   }
 
   pullHostData = () => {
-    var stagingArray = [];
-    // onSnapshot will update view if firestore updates
-    db.collection("hosts").onSnapshot((querySnapshot) => {
-      // reset data to avoid duplication
-      this.setState({
-        data: [{}],
-      });
-      // iterate through docs, add id to doc
-      // add doc to array
-      querySnapshot.forEach((doc) => {
-        var rowData = doc.data();
-        rowData["id"] = doc.id;
-        stagingArray.push(rowData);
-      });
+    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+      var stagingArray = [];
+      // onSnapshot will update view if firestore updates
+      db.collection("tenants").doc(token.claims.org).collection("hosts").onSnapshot((querySnapshot) => {
+        // reset data to avoid duplication
+        this.setState({
+          data: [{}],
+        });
+        // iterate through docs, add id to doc
+        // add doc to array
+        querySnapshot.forEach((doc) => {
+          var rowData = doc.data();
+          rowData["id"] = doc.id;
+          stagingArray.push(rowData);
+        });
 
-      // sort and store array in state
-      stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
-      this.setState({
-        data: stagingArray,
+        // sort and store array in state
+        stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
+        this.setState({
+          data: stagingArray,
+        });
       });
     });
   }
@@ -114,7 +122,7 @@ class HostDataTable extends React.Component {
     this.pullHostData();
   }
   render() {
-    var { data } = this.state;
+    var { data, cap } = this.state;
     /**
      * Iterate through firestore data and render table
      * the document ID is used in Task Output button
@@ -144,7 +152,7 @@ class HostDataTable extends React.Component {
               showButton = false;
             } else {
               rowState = true;
-              showButton = true;
+              showButton = cap !== undefined && cap.includes("run");
             }
             return (
               <Table.Row error={!rowState} positive={rowState}>

@@ -1,9 +1,8 @@
 import React from 'react';
 import { Container, Divider, Message } from 'semantic-ui-react';
 import NavMenu from '../components/NavMenu';
-import firebase from '../utils/firebase.js'
-
-const db = firebase.firestore();
+import { withFirebase } from '../utils/Firebase';
+import { withRouter } from 'react-router-dom';
 
 class Home extends React.Component {
   constructor(props) {
@@ -15,11 +14,12 @@ class Home extends React.Component {
   //Collect the id from param route and use in firestore call
   componentDidMount () {
     const { nodeId } = this.props.match.params;
+    console.log(this.props);
     this.pullTaskData(nodeId);
   }
   pullTaskData = (documentId) => {
     var taskResult = ''
-    db.collection("hosts").doc(documentId).collection("tasks")
+    this.props.firebase.app.firestore().collection("hosts").doc(documentId).collection("tasks")
       .orderBy("timestamp", "desc").limit(1).get()
       .then(querySnapshot => {
         querySnapshot.forEach((doc) => {
@@ -33,9 +33,10 @@ class Home extends React.Component {
   }
   render() {
     const {data} = this.state;
+    const {authUser} = this.props;
     return (
       <div>
-        <NavMenu activePath="task" />
+        <NavMenu authUser={authUser} activePath="task" />
         <Container>
           <Divider />
           <Message>
@@ -49,4 +50,4 @@ class Home extends React.Component {
     )
   }
 }
-export default Home;
+export default withRouter(withFirebase(Home));

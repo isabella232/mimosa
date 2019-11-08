@@ -1,12 +1,14 @@
 import React from 'react';
 import { Container, Divider, Icon, Header } from 'semantic-ui-react';
 import NavMenu from '../components/NavMenu';
+import { withRouter } from 'react-router';
 
 class Home extends React.Component {
   render() {
+    const {authUser} = this.props;
     return (
       <div>
-        <NavMenu activePath="home"/>
+        <NavMenu authUser={authUser} activePath="home"/>
         <Container>
           <Header as="h1">
             <Icon name="cocktail" />
@@ -19,4 +21,9 @@ class Home extends React.Component {
     )
   }
 }
-export default Home;
+
+const condition = authUser => !!authUser;
+
+console.log(condition);
+
+export default withRouter(Home);

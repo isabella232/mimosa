@@ -1,10 +1,8 @@
 import _ from 'lodash';
 import React from 'react';
-import firebase from '../utils/firebase.js';
 import { Table, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
-
-var db = firebase.firestore();
+import firebase from 'firebase';
 
 class HostDataTable extends React.Component {
   constructor(props) {
@@ -13,18 +11,17 @@ class HostDataTable extends React.Component {
       data: [{}],
       cap: undefined,
     }
-
-    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
       this.state.cap = token.claims.cap
     })
 
   }
 
   pullHostData = () => {
-    firebase.auth().currentUser.getIdTokenResult().then((token) => {
+    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
       var stagingArray = [];
       // onSnapshot will update view if firestore updates
-      db.collection("tenants").doc(token.claims.org).collection("hosts").onSnapshot((querySnapshot) => {
+      this.props.firebase.app.firestore().collection("tenants").doc(token.claims.cap).collection("hosts").onSnapshot((querySnapshot) => {
         // reset data to avoid duplication
         this.setState({
           data: [{}],
@@ -48,7 +45,7 @@ class HostDataTable extends React.Component {
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, data) => {
 
-    firebase.auth().currentUser.getIdToken().then(function (idToken) {
+    this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
       // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
       fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
         method: 'POST',

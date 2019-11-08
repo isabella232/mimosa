@@ -1,83 +1,90 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import { Header, Segment, Icon, Grid, Divider, Form, Button, Container } from 'semantic-ui-react';
-import firebase, { googleProvider } from '../utils/firebase.js';
-import { Redirect } from 'react-router-dom';
+import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
-import {AuthContext} from '../utils/auth.js';
 
 
-const Login = ({history}) => {
-  var email = '',
-      password = '';
+const INITIAL_STATE = {
+  email: '',
+  password: '',
+}
+
+class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...INITIAL_STATE,
+    }
+  }
   
   /**
    * Need to componentize this correctly
    * to allow for use of setState AND
    * currentUserCheck
    */
-  const set_email = (e, { value }) => {
-    email = value;
-    // this.setState({
-    //   email: value
-    // })
+  set_email = (e, { value }) => {
+    this.setState({
+      email: value
+    })
   }
-  const  set_password = (e, { value }) => {
-    password = value;
-    // this.setState({
-    //   password: value
-    // })
+  set_password = (e, { value }) => {
+    this.setState({
+      password: value
+    })
   }
-  const handle_google_login = () => {
-    firebase.auth().signInWithPopup(googleProvider).then((result) => {
-      history.push("/hosts");
+  googleLogin = () => {
+    const test = this.props.firebase.googleProv
+    this.props.firebase.auth.signInWithPopup(test).then((result) => {
+      this.props.history.push('/home')
     }).catch((error) => {
       alert(error);
     });
   }
 
-  const handle_email_login = () => {
-    firebase.auth().signInWithEmailAndPassword(email, password).then(() => {
+
+  emailLogin = () => {
+    var { email, password } = this.state;
+    this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((authUser) => {
+      this.setState({ ...INITIAL_STATE });
+      this.props.history.push('/home')
     }).catch((error) => {
       alert(error)
     });
   }
 
-  const { currentUser } = useContext(AuthContext);
-  if (currentUser) {
-    return <Redirect to='/hosts' />;
-  }
-
-  return (
-    <Container>
-      <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
-        <Grid.Column style={{ maxWidth: 450 }}>
-          <Header as='h2' color='teal' textAlign='center'>
-            <Icon name="cocktail" />Log-in to your account
-    </Header>
-          <Form size='large'>
-            <Segment stacked>
-              <Form.Input onChange={set_email} fluid icon='user' iconPosition='left' placeholder='E-mail address' />
-              <Form.Input onChange={set_password}
-                fluid
-                icon='lock'
-                iconPosition='left'
-                placeholder='Password'
-                type='password'
-              />
-              <Button onClick={handle_email_login} color='teal' fluid size='large'>
-                Login
+  render() {
+    return (
+      <Container>
+        <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
+          <Grid.Column style={{ maxWidth: 450 }}>
+            <Header as='h2' color='teal' textAlign='center'>
+              <Icon name="cocktail" />Log-in to your account
+            </Header>
+            <Form size='large'>
+              <Segment stacked>
+                <Form.Input onChange={this.set_email} fluid icon='user' iconPosition='left' placeholder='E-mail address' />
+                <Form.Input onChange={this.set_password}
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password'
+                  type='password'
+                />
+                <Button onClick={this.emailLogin} color='teal' fluid size='large'>
+                  Login
           </Button>
 
-              <Divider />
-              <Button onClick={handle_google_login} color='teal' fluid size='large'>
-                Login with Google
+                <Divider />
+                <Button onClick={this.googleLogin} color='teal' fluid size='large'>
+                  Login with Google
         </Button>
 
-            </Segment>
-          </Form>
-        </Grid.Column>
-      </Grid>
-    </Container>
-  )
+              </Segment>
+            </Form>
+          </Grid.Column>
+        </Grid>
+      </Container>
+    )
+  }
 }
-export default withRouter(Login);
+export default withRouter(withFirebase(Login));

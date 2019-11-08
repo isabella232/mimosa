@@ -99,6 +99,8 @@ Mimosa lays out documents as follows:
 * `/ws/<workspaceid>/tasks/<taskid>`
 * `/ws/<workspaceid>/results/<resultid>`
 
+Timestamps are RFC 3339 formatted strings.
+
 #### User document
 
 The document ID is obtained from the `uid` field in the JWT as shown [here](https://firebase.google.com/docs/auth/web/manage-users#get_a_users_profile.

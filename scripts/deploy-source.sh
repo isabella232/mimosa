@@ -4,47 +4,39 @@
 
 set -e
 
+# Check for the presence of the .git dir to determine if we're in the root of the repo
+if [ ! -d ".git" ]; then
+    echo "script must be run in the root of the mimosa repo";
+    exit 1
+fi
+
 if [ -z "$MIMOSA_GCP_PROJECT" ]; then
     echo "MIMOSA_GCP_PROJECT must be defined";
     exit 1
 fi
 
 if [ -z "$1" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <tenant> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
+    echo "usage: deploy-source.sh <uuid> <source-dir> <config-file> e.g. deploy-source.sh -11e15a54-72ca-44a0-9cd6-29d2a385d46b	sources/aws config.json";
     exit 1
 fi
 
-if [ -z "$2" ]; then
-    echo "usage: deploy-source.sh <full-source-name> <tenant> <source-dir> <world-builder-source-dir> <config-file> e.g. deploy-source.sh src-aws1-a24f sources/aws worldbuilders/awsfinalize config.json";
+if [ ! -d "$2" ]; then
+    echo "source dir does not exist: $2";
     exit 1
 fi
 
-if [ ! -d "$3" ]; then
-    echo "source dir does not exist: $3";
+if [ ! -f "$3" ]; then
+    echo "config file does not exist: $3";
     exit 1
 fi
 
-if [ ! -d "$4" ]; then
-    echo "world builder source dir does not exist: $4";
-    exit 1
-fi
+NAME=source-$1
+CLOUD_FUNCTION_SOURCE=$2
+CONFIG_FILE=$3
 
-if [ ! -f "$5" ]; then
-    echo "config file does not exist: $5";
-    exit 1
-fi
-
-NAME=$1
-TENANT=$2
-CLOUD_FUNCTION_SOURCE=$3
-WORLD_BUILDER_CLOUD_FUNCTION_SOURCE=$4
-CONFIG_FILE=$5
-
-echo "Source Name            : $NAME"
-echo "Tenant                 : $TENANT"
-echo "Code Dir               : $CLOUD_FUNCTION_SOURCE"
-echo "World Builder Code Dir : $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE"
-echo "Config File            : $CONFIG_FILE"
+echo "Name        : $NAME"
+echo "Code Dir    : $CLOUD_FUNCTION_SOURCE"
+echo "Config File : $CONFIG_FILE"
 
 echo
 echo "Copying config to bucket ..."
@@ -59,17 +51,6 @@ gcloud functions deploy \
  --source $CLOUD_FUNCTION_SOURCE \
  --entry-point=HandleMessage \
  $NAME
-
-echo
-echo "Deploying world-builder cloud function ..."
-gcloud functions deploy \
- --runtime go111 \
- --trigger-resource $NAME \
- --trigger-event google.storage.object.finalize \
- --set-env-vars MIMOSA_TENANT=$TENANT, \
- --source $WORLD_BUILDER_CLOUD_FUNCTION_SOURCE \
- --entry-point HandleInstance \
- WorldBuilder-$NAME
 
 echo
 echo "Finished"

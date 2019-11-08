@@ -1,35 +1,22 @@
-package gcpfinalize
+package inventory
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	compute "google.golang.org/api/compute/v1"
 )
 
-func TestCanUnmarshal(t *testing.T) {
-	var instance compute.Instance
-	b := []byte(someJSON())
-	err := json.Unmarshal(b, &instance)
+func TestConvertGCP(t *testing.T) {
+	bs := []byte(gspJSON)
+	host, err := convertGCP(bs)
 	require.NoError(t, err)
-	// log.Printf("instance: %s\n", b)
+	require.Equal(t, "6506532502499607010", host.Name)
+	require.Equal(t, "", host.Hostname)
+	require.Equal(t, "34.70.81.227", host.IP)
+	require.Equal(t, "RUNNING", host.State)
 }
 
-func TestMapInstance(t *testing.T) {
-	var instance compute.Instance
-	b := []byte(someJSON())
-	err := json.Unmarshal(b, &instance)
-	require.NoError(t, err)
-	actual := mapInstance(instance)
-	require.NoError(t, err)
-	require.Equal(t, "6506532502499607010", actual["name"])
-	require.Equal(t, "34.70.81.227", actual["public_ip"])
-	require.Equal(t, nil, actual["public_dns"])
-}
-
-func someJSON() string {
-	return `{
+var gspJSON = `{
 		"cpuPlatform": "Intel Haswell",
 		"creationTimestamp": "2019-10-17T07:47:42.615-07:00",
 		"disks": [
@@ -107,4 +94,3 @@ func someJSON() string {
 		},
 		"zone": "https://www.googleapis.com/compute/v1/projects/mimosa-256008/zones/us-central1-a"
 	}`
-}

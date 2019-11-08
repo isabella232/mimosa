@@ -93,10 +93,29 @@ Limits have been chosen to reduce near-term engineering cost. Supporting unlimit
 
 Mimosa lays out documents as follows:
 
+* `/users/<userid>`
 * `/ws/<workspaceid>`
 * `/ws/<workspaceid>/hosts/<hostid>`
 * `/ws/<workspaceid>/tasks/<taskid>`
 * `/ws/<workspaceid>/results/<resultid>`
+
+#### User document
+
+The document ID is obtained from the `uid` field in the JWT as shown [here](https://firebase.google.com/docs/auth/web/manage-users#get_a_users_profile.
+
+The document contains information about the user's workspaces and has the following fields:
+
+```json
+{
+    "workspaces": {
+        "t7c0": "Team A",
+        "YM9O": "Team A",
+        "vAgv": "Team B",
+        "odcC": "Team D",
+        "cO5w": "Team E"
+    }
+}
+```
 
 #### Workspace document
 
@@ -201,7 +220,7 @@ service cloud.firestore {
       return ws in request.auth.token.executor;
    	}
 
-	  function isReader(ws) {
+    function isReader(ws) {
       return ws in request.auth.token.reader;
    	}
 

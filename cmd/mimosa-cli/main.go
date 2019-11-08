@@ -21,23 +21,31 @@ func main() {
 	users := map[string]map[string]interface{}{
 		//"alice@example.com":
 		"OdudPCfFz4TvOjuhPEDGl8IAv6s2": map[string]interface{}{
-			"org": "org001",
-			"cap": []string{"run"},
+			"owner":    []string{"aaa"},
+			"admin":    []string{"bbb"},
+			"executor": []string{"ccc"},
+			"reader":   []string{"ddd"},
 		},
 		//"bob@example.com":
 		"t7c0YM9OvAgvodcCcO5w9ClfKcF2": map[string]interface{}{
-			"org": "org001",
-			"cap": []string{},
+			"owner":    []string{"aaa"},
+			"admin":    []string{"bbb"},
+			"executor": []string{"ccc"},
+			"reader":   []string{"ddd"},
 		},
 		// "charlie@example.com":
 		"G5sDnBYL14MRDkkdEUxu3XTHWUG2": map[string]interface{}{
-			"org": "org002",
-			"cap": []string{"run"},
+			"owner":    []string{"aaa"},
+			"admin":    []string{"bbb"},
+			"executor": []string{"ccc"},
+			"reader":   []string{"ddd"},
 		},
 		// "dervla@example.com":
 		"8AaMoo1d11RpNYvAP5XtO02iZCX2": map[string]interface{}{
-			"org": "org002",
-			"cap": []string{},
+			"owner":    []string{"aaa"},
+			"admin":    []string{"bbb"},
+			"executor": []string{"ccc"},
+			"reader":   []string{"ddd"},
 		},
 	}
 

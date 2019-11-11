@@ -4,6 +4,12 @@ import NavMenu from '../components/NavMenu';
 import { withRouter } from 'react-router';
 
 class Home extends React.Component {
+  // componentDidMount() {
+  //   this.props.firebase.auth.currentUser.getIdToken()
+  //     .then(function(token) {
+  //       console.log("token ", token.claims);
+  //     })
+  // }
   render() {
     const {authUser} = this.props;
     return (

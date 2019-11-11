@@ -1,35 +1,22 @@
-package awsfinalize
+package inventory
 
 import (
-	"encoding/json"
-	"log"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/require"
 )
 
-func TestCanUnmarshal(t *testing.T) {
-	var instance ec2.Instance
-	b := []byte(someJSON())
-	err := json.Unmarshal(b, &instance)
+func TestConvertAWS(t *testing.T) {
+	bs := []byte(awsJSON)
+	host, err := convertAWS(bs)
 	require.NoError(t, err)
-	log.Printf("instance: %s\n", b)
+	require.Equal(t, "i-0dac5f409ebb47a71", host.Name)
+	require.Equal(t, "ec2-13-56-178-141.us-west-1.compute.amazonaws.com", host.Hostname)
+	require.Equal(t, "13.56.178.141", host.IP)
+	require.Equal(t, "running", host.State)
 }
 
-func TestMapInstance(t *testing.T) {
-	var instance ec2.Instance
-	b := []byte(someJSON())
-	err := json.Unmarshal(b, &instance)
-	require.NoError(t, err)
-	actual := mapInstance(instance)
-	require.NoError(t, err)
-	require.Equal(t, "i-0dac5f409ebb47a71", actual["name"])
-	require.Equal(t, "13.56.178.141", actual["public_ip"])
-	require.Equal(t, "ec2-13-56-178-141.us-west-1.compute.amazonaws.com", actual["public_dns"])
-}
-func someJSON() string {
-	return `{
+var awsJSON = `{
 	"AmiLaunchIndex": 0,
 	"Architecture": "x86_64",
 	"BlockDeviceMappings": [{
@@ -123,4 +110,3 @@ func someJSON() string {
 	"VirtualizationType": "hvm",
 	"VpcId": "vpc-dc473db9"
   }`
-}

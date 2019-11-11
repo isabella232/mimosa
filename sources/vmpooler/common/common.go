@@ -20,6 +20,13 @@ import (
 // Right now copy and paste everything into each source package.
 //
 
+// Metadata for an item (e.g. a host) i.e. its id along with metadata (type and version e.g. aws-instance v1.2)
+type Metadata struct {
+	Version string
+	Typ     string
+	ID      string
+}
+
 func unmarshalFromBucket(bucket *storage.BucketHandle, object string, v interface{}) error {
 	defer LogTiming(time.Now(), "unmarshalFromBucket")
 	rc, err := bucket.Object(object).NewReader(context.Background())
@@ -38,9 +45,10 @@ func unmarshalFromBucket(bucket *storage.BucketHandle, object string, v interfac
 	return nil
 }
 
-func writeToBucket(bucket *storage.BucketHandle, object string, data []byte) error {
+func writeToBucket(bucket *storage.BucketHandle, object string, typ string, version string, data []byte) error {
 	defer LogTiming(time.Now(), "writeToBucket")
-	wc := bucket.Object(object).NewWriter(context.Background())
+	oh := bucket.Object(object)
+	wc := oh.NewWriter(context.Background())
 	_, err := wc.Write(data)
 	if err != nil {
 		return err
@@ -49,11 +57,18 @@ func writeToBucket(bucket *storage.BucketHandle, object string, data []byte) err
 	if err != nil {
 		return err
 	}
+	attrsUpdate := storage.ObjectAttrsToUpdate{
+		Metadata: map[string]string{
+			"mimosa-type":    typ,
+			"mimosa-version": version,
+		},
+	}
+	oh.Update(context.Background(), attrsUpdate)
 	return nil
 }
 
 // Collect data from an API and write it to Cloud Storage
-func Collect(query func(config map[string]string) (map[string][]byte, error)) error {
+func Collect(query func(config map[string]string) (map[Metadata][]byte, error)) error {
 	defer LogTiming(time.Now(), "Collect")
 
 	// Create GCP client
@@ -95,7 +110,8 @@ func Collect(query func(config map[string]string) (map[string][]byte, error)) er
 	}
 
 	// Write items to the bucket
-	for id, item := range items {
+	for md, item := range items {
+		id := md.ID
 		// Only write this instance if it has changed
 		start := time.Now()
 		previousChecksum, present := checksums[id]
@@ -103,7 +119,7 @@ func Collect(query func(config map[string]string) (map[string][]byte, error)) er
 		sha.Write(item)
 		checksum := hex.EncodeToString(sha.Sum(nil))
 		if !present || checksum != previousChecksum {
-			err = writeToBucket(bucket, id, item)
+			err = writeToBucket(bucket, id, md.Typ, md.Version, item)
 			if err != nil {
 				return err
 			}
@@ -120,7 +136,7 @@ func Collect(query func(config map[string]string) (map[string][]byte, error)) er
 	if err != nil {
 		return fmt.Errorf("Cannot marshal the value: %v", err)
 	}
-	err = writeToBucket(bucket, "state.json", data)
+	err = writeToBucket(bucket, "state.json", "", "", data)
 	if err != nil {
 		return err
 	}

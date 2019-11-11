@@ -21,7 +21,7 @@ func HandleMessage(ctx context.Context, m sourceMessage) error {
 }
 
 // Query gathers intances data from AWS
-func Query(config map[string]string) (map[string][]byte, error) {
+func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 	defer common.LogTiming(time.Now(), "gcp.Query")
 
 	// Validate the config
@@ -51,14 +51,19 @@ func Query(config map[string]string) (map[string][]byte, error) {
 		return nil, fmt.Errorf("Failed to connect to list compute instances: %v", err)
 	}
 
-	items := map[string][]byte{}
+	items := map[common.Metadata][]byte{}
 	for _, instance := range instances.Items {
 		id := fmt.Sprintf("%d", instance.Id)
 		data, err := json.Marshal(instance)
 		if err != nil {
 			return nil, err
 		}
-		items[id] = data
+		key := common.Metadata{
+			ID:      id,
+			Version: "1.0",
+			Typ:     "gcp-instance",
+		}
+		items[key] = data
 	}
 
 	return items, nil

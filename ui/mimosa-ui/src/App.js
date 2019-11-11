@@ -6,6 +6,8 @@ import Login from './view/Login';
 import HostsView from './view/HostsView'
 import Task from './view/Task';
 import Home from './view/Home';
+import Workspaces from './view/Workspaces'
+import { Switch } from 'react-router'
 import {
   BrowserRouter as Router,
   Route,
@@ -44,10 +46,11 @@ class App  extends Component {
           <MimosaHeader />
           <Router history={history}>
             <div>
-              <Route path="/login" render={() => <Login authUser={this.state.authUser} history={history} />} firebase={firebase} />
-              <Route path="/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} />} firebase={firebase} />
-              <Route path="/hosts" render={() => <HostsView authUser={this.state.authUser} firebase={firebase} />} />
-              <Route path="/:nodeId/task" render={() => <Task authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/login" render={() => <Login authUser={this.state.authUser} history={history} />} firebase={firebase} />
+              <Route exact path="/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} firebase={firebase}  />}/>
+              <Route exact path="/ws" render={() => <Workspaces authUser={this.state.authUser} firebase={firebase}/>} />
+              <Route exact path="/ws/:wsid/hosts" render={() => <HostsView authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/:nodeId/task" render={() => <Task authUser={this.state.authUser} firebase={firebase} />} />
             </div>
           </Router>
         </div>

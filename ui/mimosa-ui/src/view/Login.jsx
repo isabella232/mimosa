@@ -33,9 +33,10 @@ class Login extends React.Component {
     })
   }
   googleLogin = () => {
-    const test = this.props.firebase.googleProv
-    this.props.firebase.auth.signInWithPopup(test).then((result) => {
-      this.props.history.push('/home')
+    const googleProvider = this.props.firebase.googleProv
+    this.props.firebase.auth.signInWithPopup(googleProvider).then((result) => {
+      console.log(result);
+      this.props.history.push('/ws')
     }).catch((error) => {
       alert(error);
     });
@@ -46,9 +47,10 @@ class Login extends React.Component {
     var { email, password } = this.state;
     this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((authUser) => {
       this.setState({ ...INITIAL_STATE });
-      this.props.history.push('/home')
+      this.props.history.push('/ws')
     }).catch((error) => {
       alert(error)
+      this.setState({ ...INITIAL_STATE });
     });
   }
 

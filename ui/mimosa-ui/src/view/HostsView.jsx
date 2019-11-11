@@ -7,7 +7,7 @@ import { withRouter } from 'react-router-dom';
 
 class HostsView extends React.Component {
   render() {
-    const { authUser, firebase } = this.props;
+    const { authUser, firebase, history } = this.props;
     const { wsid } = this.props.match.params;
     return (
       <div>
@@ -15,7 +15,7 @@ class HostsView extends React.Component {
         <Container>
           <Header as="h1">Host</Header>
           <Divider />
-          <HostDataTable workspace={wsid} firebase={firebase}/>
+          <HostDataTable workspace={wsid} history={history} firebase={firebase}/>
         </Container>
       </div>
     )

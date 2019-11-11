@@ -14,6 +14,7 @@ class HostDataTable extends React.Component {
     }
     this.setHost = this.setHost.bind(this);
     this.setAllHost = this.setAllHost.bind(this);
+    this.runTask = this.runTask.bind(this);
     this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
       this.state.cap = token.claims.cap
     })
@@ -74,11 +75,6 @@ class HostDataTable extends React.Component {
 
   }
 
-  runTask = () => {
-    var {hosts}  = this.state;
-    console.log(hosts);
-  }
-
   componentDidMount() {
     const {workspace} = this.props;
     //fakeData to be used for styling, visual fixes, rather than hitting DB
@@ -132,6 +128,7 @@ class HostDataTable extends React.Component {
   }
   setHost(e, data) {
     var { hosts } = this.state;
+    console.log(hosts);
     if (data.checked) {
       if (hosts && !hosts.includes(data.value)) {
         hosts.push(data.value);
@@ -145,14 +142,20 @@ class HostDataTable extends React.Component {
     this.setState({
       hosts: hosts,
     })
+    console.log(this.state.hosts);
   }
 
   setAllHost(e, data) {
     var {data, hosts} = this.state;
     console.log(data);
-
-    
   }
+
+  runTask = () => {
+    var { hosts } = this.state;
+    console.log(hosts);
+    this.props.history.push('/run-task', { response: hosts });
+  }
+
   render() {
     var { data, cap, hosts } = this.state;
     /**
@@ -200,12 +203,12 @@ class HostDataTable extends React.Component {
               return (
                 <Table.Row error={!rowState} positive={rowState}>
                   <Table.Cell>{listVal.name}</Table.Cell>
-                  <Table.Cell>{listVal.public_dns}</Table.Cell>
-                  <Table.Cell>{listVal.public_ip}</Table.Cell>
+                  <Table.Cell>{listVal.hostname}</Table.Cell>
+                  <Table.Cell>{listVal.ip}</Table.Cell>
                   <Table.Cell>{listVal.source}</Table.Cell>
                   <Table.Cell>{listVal.state}</Table.Cell>
                   <Table.Cell>
-                    <Checkbox className="host-select" value={listVal.public_dns} onChange={this.setHost} />
+                    <Checkbox className="host-select" value={listVal.hostname} onChange={this.setHost} />
                   </Table.Cell>
                 </Table.Row>
               )

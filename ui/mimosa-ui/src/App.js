@@ -4,7 +4,7 @@ import './App.css'
 import MimosaHeader from './components/MimosaHeader';
 import Login from './view/Login';
 import HostsView from './view/HostsView'
-import Task from './view/Task';
+import RunTask from './view/RunTask';
 import Home from './view/Home';
 import Workspaces from './view/Workspaces'
 import { Switch } from 'react-router'
@@ -50,7 +50,7 @@ class App  extends Component {
               <Route exact path="/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} firebase={firebase}  />}/>
               <Route exact path="/ws" render={() => <Workspaces authUser={this.state.authUser} firebase={firebase}/>} />
               <Route exact path="/ws/:wsid/hosts" render={() => <HostsView authUser={this.state.authUser} firebase={firebase} />} />
-              <Route exact path="/:nodeId/task" render={() => <Task authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
             </div>
           </Router>
         </div>

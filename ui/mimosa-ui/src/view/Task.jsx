@@ -12,28 +12,29 @@ class Home extends React.Component {
     }
   }
   //Collect the id from param route and use in firestore call
-  componentDidMount () {
+  componentDidMount() {
     const { nodeId } = this.props.match.params;
     console.log(this.props);
     this.pullTaskData(nodeId);
   }
   pullTaskData = (documentId) => {
-    var taskResult = ''
-    this.props.firebase.app.firestore().collection("hosts").doc(documentId).collection("tasks")
-      .orderBy("timestamp", "desc").limit(1).get()
-      .then(querySnapshot => {
-        querySnapshot.forEach((doc) => {
-          taskResult = JSON.stringify(doc.data());
+    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+      var taskResult = ''
+      this.props.firebase.app.firestore().collection("ws").doc(token.claims.defaultws).collection("tasks")
+        .orderBy("timestamp", "desc").limit(1).get()
+        .then(querySnapshot => {
+          querySnapshot.forEach((doc) => {
+            taskResult = JSON.stringify(doc.data(), null, 2);
+          })
+          this.setState({
+            data: taskResult
+          })
         })
-        this.setState({
-          data: taskResult
-        })
-      })
-    
+    });
   }
   render() {
-    const {data} = this.state;
-    const {authUser} = this.props;
+    const { data } = this.state;
+    const { authUser } = this.props;
     return (
       <div>
         <NavMenu authUser={authUser} activePath="task" />
@@ -41,9 +42,9 @@ class Home extends React.Component {
           <Divider />
           <Message>
             <Message.Header>Task Output</Message.Header>
-            <code>
+            <pre>
               {data}
-            </code>
+            </pre>
           </Message>
         </Container>
       </div>

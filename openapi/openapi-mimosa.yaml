@@ -17,21 +17,33 @@ securityDefinitions:
     x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
     x-google-audiences: "mimosa-256008"
 paths:
-  /runtask:
+  /api/v1/runtask:
     post:
+      summary: "Run a task against a host"
       consumes:
         - application/json
-      produces:
-        - application/json
-        - text/xml
-        - text/html
-      operationId: runtaskPost
+      parameters:
+        - in: body
+          name: target
+          description: The workspace and ID of the target host
+          schema:
+            $ref: "#/definitions/Target"
+      operationId: api-v1-runtask
       x-google-backend:
-        address: https://us-central1-mimosa-256008.cloudfunctions.net/runtask
+        address: https://us-central1-mimosa-256008.cloudfunctions.net/api-v1-runtask
       responses:
         "200":
           description: A successful response
-          schema:
-            type: string
+definitions:
+  Target:
+    type: object
+    required:
+      - workspace
+      - id
+    properties:
+      workspace:
+        type: string
+      id:
+        type: string
 security:
   - firebase: []

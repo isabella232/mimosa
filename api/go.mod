@@ -1,4 +1,4 @@
-module github.com/puppetlabs/mimosa/infra/runtask
+module github.com/puppetlabs/mimosa/api
 
 go 1.11
 

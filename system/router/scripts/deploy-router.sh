@@ -16,7 +16,7 @@ if [ -z "$UUID" ]; then
     exit 1
 fi
 
-echo "Deploying router for $MIMOSA_WORKSPACE - $UUID..."
+echo "Deploying router for $MIMOSA_WORKSPACE - $UUID ..."
 gcloud functions deploy \
  --runtime go111 \
  --trigger-resource source-$UUID \

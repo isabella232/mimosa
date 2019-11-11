@@ -120,7 +120,7 @@ We use [berglas](https://github.com/GoogleCloudPlatform/berglas) for secrets whi
 
 Once the berglas bootstrap process has completed there'll be a new KMS key and storage bucket.
 
-The service account running the "system-reusabolt" cloud function (likely "Compute Engine default service account") needs some permissions:
+The service account running the "system-reusabolt" cloud function (likely "App Engine default service account") needs some additional permissions:
 
 * Storage Viewer on the berglas bucket: `gsutil acl ch -u <service-account-email>:R gs://<bucket-name>`
 * Cloud KMS CryptoKey Decryptor on the berglas key (https://console.cloud.google.com/security/kms)

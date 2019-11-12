@@ -60,7 +60,7 @@ func writeToBucket(bucket *storage.BucketHandle, object string, typ string, vers
 	attrsUpdate := storage.ObjectAttrsToUpdate{
 		Metadata: map[string]string{
 			"mimosa-type":    typ,
-			"mimosa-version": version,
+			"mimosa-type-version": version,
 		},
 	}
 	oh.Update(context.Background(), attrsUpdate)

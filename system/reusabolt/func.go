@@ -1,4 +1,4 @@
-package runner
+package reusabolt
 
 import (
 	"bytes"
@@ -17,21 +17,27 @@ import (
 	"github.com/GoogleCloudPlatform/berglas/pkg/berglas"
 )
 
+type target struct {
+	Workspace string `json:"workspace"`
+	ID        string `json:"id"`
+}
+
 type payload struct {
 	User        string `json:"user"`
 	Hostname    string `json:"hostname"`
 	KeyMaterial []byte `json:"keymaterial"`
 }
 
-// WrapReusabolt runs Cloud Run functions in response to pubsub messages
-func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
+// TriggerReusabolt runs Cloud Run functions in response to pubsub messages
+func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	log.Printf("Received pubsub message: %s", m.Data)
 
-	id := string(m.Data)
-	if id == "" {
-		log.Panicf("No firestore ID found in message")
+	// Unmarshal the target
+	var target target
+	err := json.Unmarshal(m.Data, &target)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal body: %w", err)
 	}
-	log.Printf("Firestore ID: %s", id)
 
 	// Bucket holding secrets
 	berglasBucket := os.Getenv("MIMOSA_SECRETS_BUCKET")
@@ -40,14 +46,10 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 	log.Printf("Secrets bucket: %s", berglasBucket)
 
-	// Lookup private key
-	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/%s", berglasBucket, id))
+	// Try checking for a default key
+	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/default", berglasBucket))
 	if err != nil {
-		// Try checking for a default key
-		keyMaterial, err = berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/default", berglasBucket))
-		if err != nil {
-			log.Fatal(err)
-		}
+		log.Fatal(err)
 	}
 	log.Printf("Found key material in berglas")
 	if len(keyMaterial) == 0 {
@@ -69,13 +71,13 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return err
 	}
-	host, err := fc.Collection("hosts").Doc(id).Get(ctx)
+	host, err := fc.Collection("ws").Doc(target.Workspace).Collection("hosts").Doc(target.ID).Get(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Construct the payload
-	hostname, err := host.DataAt("public_dns")
+	hostname, err := host.DataAt("hostname")
 	if err != nil {
 		return err
 	}
@@ -137,9 +139,8 @@ func WrapReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 	result["timestamp"] = time.Now().Format(time.RFC3339)
 
-	// Write the doc to the "hosts" collection
-	tasks := fc.Collection("hosts").Doc(id).Collection("tasks")
-	_, _, err = tasks.Add(ctx, result)
+	// Write the doc to the "tasks" collection
+	_, _, err = fc.Collection("ws").Doc(target.Workspace).Collection("tasks").Add(ctx, result)
 	return err
 
 }

@@ -71,26 +71,6 @@ Now test the deployment:
 
     gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
 
-Deploy the pubsub adaptor with the correct service URL and secrets bucket (see below):
-
-    gcloud functions deploy \
-    --runtime go111 \
-    --trigger-topic reusabolt \
-    --set-env-vars MIMOSA_SERVICE_URL=https://runner-xxxx-ew.a.run.app,MIMOSA_SECRETS_BUCKET=<secrets-bucket> \
-    --source infra/runner \
-    --entry-point=WrapReusabolt \
-    WrapReusabolt
-
-Deploy the function that the UI uses to run tasks:
-
-    gcloud functions deploy \
-    --no-allow-unauthenticated \
-    --runtime go111 \
-    --trigger-http \
-    --source infra/runtask \
-    --entry-point=RunTask \
-    runtask
-
 ## Extensible Service Proxy (ESP)
 
 Deploy ESP to handle auth and CORS for all API calls.
@@ -140,7 +120,7 @@ We use [berglas](https://github.com/GoogleCloudPlatform/berglas) for secrets whi
 
 Once the berglas bootstrap process has completed there'll be a new KMS key and storage bucket.
 
-The service account running the "Wrapreusabolt" cloud function (likely "Compute Engine default service account") needs some permissions:
+The service account running the "system-reusabolt" cloud function (likely "App Engine default service account") needs some additional permissions:
 
 * Storage Viewer on the berglas bucket: `gsutil acl ch -u <service-account-email>:R gs://<bucket-name>`
 * Cloud KMS CryptoKey Decryptor on the berglas key (https://console.cloud.google.com/security/kms)

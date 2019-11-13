@@ -49,6 +49,10 @@ func writeToBucket(bucket *storage.BucketHandle, object string, typ string, vers
 	defer LogTiming(time.Now(), "writeToBucket")
 	oh := bucket.Object(object)
 	wc := oh.NewWriter(context.Background())
+	wc.ObjectAttrs.Metadata = map[string]string{
+		"mimosa-type":         typ,
+		"mimosa-type-version": version,
+	}
 	_, err := wc.Write(data)
 	if err != nil {
 		return err
@@ -57,13 +61,6 @@ func writeToBucket(bucket *storage.BucketHandle, object string, typ string, vers
 	if err != nil {
 		return err
 	}
-	attrsUpdate := storage.ObjectAttrsToUpdate{
-		Metadata: map[string]string{
-			"mimosa-type":    typ,
-			"mimosa-type-version": version,
-		},
-	}
-	oh.Update(context.Background(), attrsUpdate)
 	return nil
 }
 

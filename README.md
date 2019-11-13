@@ -30,11 +30,13 @@ Enable Firestore in Native Mode in your new project: [TODO Which region should w
 
 You may find that GCP asks you to enable particular APIs or to enable billing as you deploy mimosa.
 
-## User Interface
+## Deploy the system
 
-Deploy the UI:
+You need to deploy using the following scripts:
 
-    gcloud functions deploy --entry-point HandleHTTPRequest --runtime go111  --trigger-http --source ui ui
+    system/usermgmt/scripts/deploy-reusabolt.sh
+    system/usermgmt/scripts/deploy-router.sh
+    system/usermgmt/scripts/deploy-usermgmt.sh
 
 ## Cloud Run
 

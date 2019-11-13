@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Container, Grid, Message, Table, Header, Icon, Button, Divider } from 'semantic-ui-react';
 import { withRouter } from 'react-router';
 import { withFirebase } from '../utils/Firebase';
 
 import './workspaces.css'
 
-class Workspaces extends React.Component {
+class Workspaces extends Component {
 
   constructor(props) {
     super(props);
@@ -34,7 +34,6 @@ class Workspaces extends React.Component {
     }
     this.pullWorkspace();
   }
-
   handleClick = (name) => {
     console.log(name);
     this.props.history.push(`/ws/${name}/hosts`);

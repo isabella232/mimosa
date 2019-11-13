@@ -7,7 +7,9 @@ import HostsView from './view/HostsView'
 import RunTask from './view/RunTask';
 import Home from './view/Home';
 import Workspaces from './view/Workspaces'
-import { Switch } from 'react-router'
+import RunContext from './view/RunContext.jsx'
+import RunDetail from './view/RunDetail.jsx'
+import HostDetailView from './view/HostDetailView.jsx';
 import {
   BrowserRouter as Router,
   Route,
@@ -47,10 +49,13 @@ class App  extends Component {
           <Router history={history}>
             <div>
               <Route exact path="/login" render={() => <Login authUser={this.state.authUser} history={history} />} firebase={firebase} />
-              <Route exact path="/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} firebase={firebase}  />}/>
+              <Route exact path="/ws/:wsid/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} firebase={firebase}  />}/>
               <Route exact path="/ws" render={() => <Workspaces authUser={this.state.authUser} firebase={firebase}/>} />
               <Route exact path="/ws/:wsid/hosts" render={() => <HostsView authUser={this.state.authUser} firebase={firebase} />} />
-              <Route exact path="/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/host/:hostid" render={() => <HostDetailView authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/run-context" render={() => <RunContext authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/run/:runid" render={() => <RunDetail authUser={this.state.authUser} firebase={firebase} />} />
             </div>
           </Router>
         </div>

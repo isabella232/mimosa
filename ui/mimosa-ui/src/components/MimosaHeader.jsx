@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Header, Segment, Icon } from 'semantic-ui-react';
 
-class MimosaHeader extends React.Component {
+class MimosaHeader extends Component {
   render() {
     return (
       <Segment inverted className="mimosaHeader">

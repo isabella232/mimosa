@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Menu, Button } from 'semantic-ui-react';
 import {withRouter} from 'react-router';
 import { withFirebase } from '../utils/Firebase';
 
 import {Link} from 'react-router-dom'; 
 
-class NavMenu extends React.Component {
+class NavMenu extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,14 +34,16 @@ class NavMenu extends React.Component {
 
   render() {
     const {activeItem} = this.state;
-    const {authUser} = this.props;
+    const {authUser, workspace} = this.props;
     console.log(authUser);
     if (!authUser) {
       this.props.history.push('/login');
     }
+    var prefix = `/ws/${workspace}`
     // Random Nav Items commented out, can be deleted
     // or used for later work
     return (
+      ///ws/:wsid/hosts
       <div>
         {authUser ?
           <Menu pointing vertical fixed inverted className="side-nav">
@@ -49,13 +51,25 @@ class NavMenu extends React.Component {
               name='home'
               active={activeItem === 'home'}
               onClick={this.handleMenuNav}
-              as={Link} to='/home'
+              as={Link} to={prefix + '/home'}
             />
             <Menu.Item
-              name='hosts'
-              active={activeItem === 'hosts'}
+              name='host list'
+              active={activeItem === 'host list'}
               onClick={this.handleMenuNav}
-              as={Link} to='/hosts'
+              as={Link} to={prefix + '/hosts'}
+            />
+            <Menu.Item
+              name='run context'
+              active={activeItem === 'run context'}
+              onClick={this.handleMenuNav}
+              as={Link} to={prefix + '/run-context'}
+            />
+            <Menu.Item
+              name='start run'
+              active={activeItem === 'start run'}
+              onClick={this.handleMenuNav}
+              as={Link} to={prefix + '/run-task'}
             />
             <Button
               className='login'
@@ -70,14 +84,7 @@ class NavMenu extends React.Component {
               name='home'
               active={activeItem === 'home'}
               onClick={this.handleMenuNav}
-              as={Link} to='/home'
-            />
-            <Menu.Item
-              disabled
-              name='hosts'
-              active={activeItem === 'hosts'}
-              onClick={this.handleMenuNav}
-              as={Link} to='/hosts'
+              as={Link} to={prefix + '/home'}
             />
             <Button
               className='login'

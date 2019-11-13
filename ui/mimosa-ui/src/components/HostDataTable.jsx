@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import React from 'react';
+import React, {Component} from 'react';
 import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
 import firebase from 'firebase';
 
-class HostDataTable extends React.Component {
+class HostDataTable extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -15,17 +15,20 @@ class HostDataTable extends React.Component {
     this.setHost = this.setHost.bind(this);
     this.setAllHost = this.setAllHost.bind(this);
     this.runTask = this.runTask.bind(this);
-    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      this.state.cap = token.claims.cap
-    })
-
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        this.setState({
+          cap: token.claims.cap
+        })
+      })
+    }
   }
 
   pullHostData = (workspace) => {
     this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
       var stagingArray = [];
       // onSnapshot will update view if firestore updates
-      this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").onSnapshot((querySnapshot) => {
+      this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").get().then((querySnapshot) => {
         // reset data to avoid duplication
         this.setState({
           data: [{}],
@@ -62,8 +65,8 @@ class HostDataTable extends React.Component {
         referrer: 'no-referrer',
         body: JSON.stringify({ "workspace": "ws1", "id": hostid })
       }).then(response => {
-        console.log(response.status)
-        console.log(response.text())
+        // console.log(response.status)
+        // console.log(response.text())
       })
         .catch(error => {
           console.error('Error during Mimosa:', error);
@@ -78,48 +81,6 @@ class HostDataTable extends React.Component {
   componentDidMount() {
     const { workspace } = this.props;
     //fakeData to be used for styling, visual fixes, rather than hitting DB
-    let fakeData = [
-      {
-        name: "onoijsaofjasmdfl;jasdofl;ask;dojasdfje",
-        public_dns: "12234234590u320495u2039u4534",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "me, myself and i",
-        state: "running",
-      },
-      {
-        name: "ksdfoijasd;fmas;odfj;ofj",
-        public_dns: "123psdfosjdf4",
-        public_ip: "0.0.0.1:/255",
-        since: {
-          seconds: 1234,
-        },
-        source: "vmpooler",
-        state: "terminated",
-      },
-      {
-        name: "asdc;amsd;kcnaskcn",
-        public_dns: "1234",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "bwabeabeaa",
-        state: "running",
-      },
-      {
-        name: "sdfasjo;fdjoais;djfo",
-        public_dns: "1234",
-        public_ip: "0.0.0.1",
-        since: {
-          seconds: 1234,
-        },
-        source: "sdfasdfasdfasdf",
-        state: "terminated",
-      }
-    ]
     this.setState({
       // data: fakeData,
       hosts: [],
@@ -152,8 +113,9 @@ class HostDataTable extends React.Component {
 
   runTask = () => {
     var { hosts } = this.state;
+    var { workspace } = this.props;
     console.log(hosts);
-    this.props.history.push('/run-task', { response: hosts });
+    this.props.history.push(`/ws/${workspace}/run-task`, { response: hosts });
   }
 
   render() {
@@ -200,15 +162,16 @@ class HostDataTable extends React.Component {
                 rowState = true;
                 showButton = true;
               }
+              var {workspace} = this.props;
               return (
                 <Table.Row error={!rowState} positive={rowState}>
-                  <Table.Cell>{listVal.name}</Table.Cell>
+                  <Table.Cell><Link to={`/ws/${workspace}/host/${listVal.id}`}>{listVal.name}</Link></Table.Cell>
                   <Table.Cell>{listVal.hostname}</Table.Cell>
                   <Table.Cell>{listVal.ip}</Table.Cell>
                   <Table.Cell>{listVal.source}</Table.Cell>
                   <Table.Cell>{listVal.state}</Table.Cell>
                   <Table.Cell>
-                    <Checkbox className="host-select" value={listVal.hostname} onChange={this.setHost} />
+                    <Checkbox className="host-select" value={listVal.name} onChange={this.setHost} />
                   </Table.Cell>
                 </Table.Row>
               )

@@ -37,6 +37,7 @@ func Route(ctx context.Context, object *storage.Object) error {
 	mimosaType := object.Metadata["mimosa-type"]
 	if mimosaType == "" {
 		log.Printf("Ignoring object with no mimosa-type: %s/%s", object.Bucket, object.Name)
+		return nil
 	}
 
 	// Queue the message onto the topic associated with this type
@@ -45,13 +46,14 @@ func Route(ctx context.Context, object *storage.Object) error {
 		return err
 	}
 	topic := client.TopicInProject(mimosaType, project)
-	message := routerMessage{
+	routerMessage := routerMessage{
 		Bucket:    object.Bucket,
 		Name:      object.Name,
 		Version:   object.Metadata["mimosa-type-version"],
 		Workspace: workspace,
 	}
-	data, err := json.Marshal(message)
+	log.Printf("router message: %v", routerMessage)
+	data, err := json.Marshal(routerMessage)
 	if err != nil {
 		return err
 	}

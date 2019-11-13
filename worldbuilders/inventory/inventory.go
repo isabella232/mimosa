@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -45,6 +46,7 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal router message: %v", err)
 		}
+		log.Printf("router message: %v", routerMessage)
 
 		// FIXME Check version is supported
 		if routerMessage.Version == "" {

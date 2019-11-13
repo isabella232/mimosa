@@ -28,15 +28,32 @@ Enable Firestore in Native Mode in your new project: [TODO Which region should w
 
     https://console.cloud.google.com/firestore
 
-You may find that GCP asks you to enable particular APIs or to enable billing as you deploy mimosa.
+You may find that GCP asks you to enable particular APIs or to enable billing as you deploy mimosa e.g. if you have not yet enabled Cloud Functions you may see a message like this. Choose "y".
 
-## Deploy the system
+    API [cloudfunctions.googleapis.com] not enabled on project
+    [870066425029]. Would you like to enable and retry (this will take a few minutes)? (y/N)?  y
 
-You need to deploy using the following scripts:
+## Test
 
-    system/reusabolt/scripts/deploy-reusabolt.sh
-    system/router/scripts/deploy-router.sh
-    system/usermgmt/scripts/deploy-usermgmt.sh
+Build, test and lint Mimosa like this:
+
+    make
+
+There are also per-module Makefiles.
+
+## Deployment
+
+Deploy Mimosa like this:
+
+    make deploy
+
+There are also per-module Makefiles to allow deployment of individual Cloud Functions.
+
+Sources must be deployed using the Makefile in the `sources` dir:
+
+    cd sources
+    make create-source
+    make deploy-source
 
 ## Cloud Run
 
@@ -168,14 +185,3 @@ The following example assumes AWS. You will need your AWS access key, secret key
     "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 }
 ```
-
-### Deploying a source
-
-Run `scripts/create-source.sh` specifying the name, source dir and config file for your source e.g.
-
-    sh scripts/create-source.sh aws1 sources/aws awsconfig.json
-
-If you have not yet enabled Cloud Functions you may see a message like this. Choose "y".
-
-    API [cloudfunctions.googleapis.com] not enabled on project
-    [870066425029]. Would you like to enable and retry (this will take a few minutes)? (y/N)?  y

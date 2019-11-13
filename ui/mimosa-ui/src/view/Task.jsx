@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Container, Divider, Message } from 'semantic-ui-react';
 import NavMenu from '../components/NavMenu';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
 
-class Home extends React.Component {
+class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -17,6 +17,7 @@ class Home extends React.Component {
     console.log(this.props);
     this.pullTaskData(nodeId);
   }
+
   pullTaskData = (documentId) => {
     this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
       var taskResult = ''

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Container, Divider, Icon, Header } from 'semantic-ui-react';
 import NavMenu from '../components/NavMenu';
 import { withRouter } from 'react-router';
 
-class Home extends React.Component {
+class Home extends Component {
   // componentDidMount() {
   //   this.props.firebase.auth.currentUser.getIdToken()
   //     .then(function(token) {

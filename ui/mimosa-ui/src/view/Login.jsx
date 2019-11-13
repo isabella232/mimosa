@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Header, Segment, Icon, Grid, Divider, Form, Button, Container } from 'semantic-ui-react';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
@@ -9,7 +9,7 @@ const INITIAL_STATE = {
   password: '',
 }
 
-class Login extends React.Component {
+class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {

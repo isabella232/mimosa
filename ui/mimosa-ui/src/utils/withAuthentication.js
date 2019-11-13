@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { withFirebase } from '../utils/Firebase';
 import { compose } from 'recompose';
@@ -8,7 +8,7 @@ import { compose } from 'recompose';
 // too late... so either it needs used earlier, or we readjust
 // how we are handling routes
 const withAuthentication = condition => Component => {
-  class WithAuthentication extends React.Component {
+  class WithAuthentication extends Component {
     componentDidMount() {
       console.log('withAuth', condition);
       this.listener = this.props.firebase.auth.onAuthStateChanged(

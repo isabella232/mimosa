@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Message, Grid, List, Icon } from 'semantic-ui-react';
+import { Table, Message, Grid, List } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
 
 class HostDetail extends Component {

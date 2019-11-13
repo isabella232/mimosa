@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Divider, Icon, Header } from 'semantic-ui-react';
-import NavMenu from '../components/NavMenu';
+import {NavMenu} from '../components';
 import { withRouter } from 'react-router';
 
 class Home extends Component {

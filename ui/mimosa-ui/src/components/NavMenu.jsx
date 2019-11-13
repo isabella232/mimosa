@@ -11,8 +11,6 @@ class NavMenu extends Component {
     this.state = {
       activeItem: '',
     }
-
-    const { activePath } = this.props
   }
 
   handle_logout = () => {

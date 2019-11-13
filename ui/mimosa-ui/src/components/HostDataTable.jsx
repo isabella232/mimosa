@@ -1,8 +1,6 @@
-import _ from 'lodash';
 import React, {Component} from 'react';
 import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
-import firebase from 'firebase';
 
 class HostDataTable extends Component {
   constructor(props) {
@@ -13,7 +11,6 @@ class HostDataTable extends Component {
       hosts: [],
     }
     this.setHost = this.setHost.bind(this);
-    this.setAllHost = this.setAllHost.bind(this);
     this.runTask = this.runTask.bind(this);
     if (this.props.firebase.auth.currentUser) {
       this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
@@ -106,11 +103,6 @@ class HostDataTable extends Component {
     console.log(this.state.hosts);
   }
 
-  setAllHost(e, data) {
-    var { data, hosts } = this.state;
-    console.log(data);
-  }
-
   runTask = () => {
     var { hosts } = this.state;
     var { workspace } = this.props;
@@ -119,7 +111,7 @@ class HostDataTable extends Component {
   }
 
   render() {
-    var { data, cap, hosts } = this.state;
+    var { data } = this.state;
     /**
      * Iterate through firestore data and render table
      * the document ID is used in Task Output button
@@ -147,20 +139,17 @@ class HostDataTable extends Component {
               <Table.HeaderCell>Source</Table.HeaderCell>
               <Table.HeaderCell>State</Table.HeaderCell>
               <Table.HeaderCell>
-                <Checkbox className="all-hosts" disabled onChange={this.setAllHost} />
                 Host Select
               </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {data && data.map((listVal) => {
-              var rowState, showButton;
+              var rowState;
               if (listVal.state === 'terminated') {
                 rowState = false;
-                showButton = false;
               } else {
                 rowState = true;
-                showButton = true;
               }
               var {workspace} = this.props;
               return (

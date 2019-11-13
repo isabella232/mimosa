@@ -1,8 +1,5 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
-import { Table, Message, Grid, Icon } from 'semantic-ui-react';
-import { Link } from 'react-router-dom'
-import firebase from 'firebase';
+import { Table, Message, Grid } from 'semantic-ui-react';
 
 class TaskDetail extends Component {
   constructor(props) {
@@ -22,7 +19,6 @@ class TaskDetail extends Component {
 
   pullTask = (workspace, task) => {
     this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      var stagingArray = [];
       // onSnapshot will update view if firestore updates
       this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(task).onSnapshot((querySnapshot) => {
         // reset data to avoid duplication

@@ -1,8 +1,6 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
-import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
+import { Table } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
-import firebase from 'firebase';
 
 class TaskDataTable extends Component {
   constructor(props) {
@@ -55,7 +53,7 @@ class TaskDataTable extends Component {
   }
 
   render() {
-    var { data, cap, hosts } = this.state;
+    var { data } = this.state;
     const { workspace } = this.props;
     /**
      * Iterate through firestore data and render table
@@ -83,7 +81,6 @@ class TaskDataTable extends Component {
                 taskData.items.map((item) => {
                   task = item.object;
                   status = item.status;
-                  return;
                 })
               }
               return (

@@ -98,8 +98,14 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 
 		// Compute a deterministic hash to use as firestore ID
 		sha := sha1.New()
-		sha.Write([]byte(source))
-		sha.Write([]byte(host.Name))
+		_, err = sha.Write([]byte(source))
+		if err != nil {
+			return err
+		}
+		_, err = sha.Write([]byte(host.Name))
+		if err != nil {
+			return err
+		}
 		id := hex.EncodeToString(sha.Sum(nil))
 
 		// Write the doc to the "hosts" collection

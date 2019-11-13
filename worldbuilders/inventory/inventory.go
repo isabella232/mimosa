@@ -56,7 +56,20 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		if err != nil {
 			return err
 		}
-		rc, err := client.Bucket(routerMessage.Bucket).Object(routerMessage.Name).NewReader(ctx)
+		obj := client.Bucket(routerMessage.Bucket).Object(routerMessage.Name)
+		attrs, err := obj.Attrs(ctx)
+		if err != nil {
+			return err
+		}
+
+		//NOTE: we could cross-check these values vs the router message (e.g. routerMessage.Version), or just use one mechanism
+		if _, ok := attrs.Metadata["mimosa-type"]; !ok {
+			return fmt.Errorf("missing metadata mimosa-type")
+		}
+		if _, ok := attrs.Metadata["mimosa-type-version"]; !ok {
+			return fmt.Errorf("missing metadata mimosa-type-version")
+		}
+		rc, err := obj.NewReader(ctx)
 		if err != nil {
 			return err
 		}
@@ -67,6 +80,7 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		}
 
 		// Convert the object to a host
+		// FIXME pass the mimosa-type and mimosa-type-version value to the convert func
 		host, err := convert(object)
 		if err != nil {
 			return err

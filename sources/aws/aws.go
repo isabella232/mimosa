@@ -26,7 +26,7 @@ func HandleMessage(ctx context.Context, m sourceMessage) error {
 }
 
 // Query gathers intances data from AWS
-func Query(config map[string]string) (map[string][]byte, error) {
+func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 	defer common.LogTiming(time.Now(), "aws.Query")
 
 	// Validate config
@@ -69,7 +69,7 @@ func Query(config map[string]string) (map[string][]byte, error) {
 	}
 
 	// Gather instances
-	items := map[string][]byte{}
+	items := map[common.Metadata][]byte{}
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
 			id := *instance.InstanceId
@@ -77,9 +77,13 @@ func Query(config map[string]string) (map[string][]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			items[id] = data
+			key := common.Metadata{
+				ID:      id,
+				Version: "1.0",
+				Typ:     "aws-instance",
+			}
+			items[key] = data
 		}
 	}
-
 	return items, nil
 }

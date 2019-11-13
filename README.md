@@ -34,8 +34,8 @@ You may find that GCP asks you to enable particular APIs or to enable billing as
 
 You need to deploy using the following scripts:
 
-    system/usermgmt/scripts/deploy-reusabolt.sh
-    system/usermgmt/scripts/deploy-router.sh
+    system/reusabolt/scripts/deploy-reusabolt.sh
+    system/router/scripts/deploy-router.sh
     system/usermgmt/scripts/deploy-usermgmt.sh
 
 ## Cloud Run

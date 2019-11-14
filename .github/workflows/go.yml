@@ -19,6 +19,8 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
+      with:
+        repository: $GITHUB_REPOSITORY
 
     - name: Build
       run: make

@@ -61,7 +61,7 @@ func UserCreated(ctx context.Context, user userRecord) error {
 
 	app, err := firebase.NewApp(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("error initializing app: %w", err)
+		return fmt.Errorf("error initializing app: %v", err)
 	}
 
 	// Get the Firestore client
@@ -89,7 +89,7 @@ func UserCreated(ctx context.Context, user userRecord) error {
 	// Create a default workspace
 	workspace, err := generateWorkspaceID()
 	if err != nil {
-		return fmt.Errorf("error generating workspace ID: %w", err)
+		return fmt.Errorf("error generating workspace ID: %v", err)
 	}
 	workspaceName := "Default Workspace for " + user.Email
 
@@ -125,11 +125,11 @@ func UserCreated(ctx context.Context, user userRecord) error {
 	log.Printf("Updating claims in Identity Platform")
 	client, err := app.Auth(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting auth client: %w", err)
+		return fmt.Errorf("error getting auth client: %v", err)
 	}
 	err = client.SetCustomUserClaims(ctx, user.UID, user.CustomClaims)
 	if err != nil {
-		return fmt.Errorf("error setting custom claims: %w", err)
+		return fmt.Errorf("error setting custom claims: %v", err)
 	}
 
 	return nil

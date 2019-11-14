@@ -1,6 +1,6 @@
 module github.com/puppetlabs/mimosa/test-source
 
-go 1.13
+go 1.11
 
 require (
 	cloud.google.com/go/storage v1.1.0

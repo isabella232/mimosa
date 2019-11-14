@@ -1,6 +1,6 @@
 module github.com/puppetlabs/mimosa/ui
 
-go 1.13
+go 1.11
 
 require (
 	cloud.google.com/go/firestore v1.0.0

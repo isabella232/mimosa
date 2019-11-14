@@ -36,7 +36,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	var target target
 	err := json.Unmarshal(m.Data, &target)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal body: %w", err)
+		return fmt.Errorf("failed to unmarshal body: %v", err)
 	}
 
 	// Bucket holding secrets

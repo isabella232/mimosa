@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/puppetlabs/mimosa/sources/common"
 	"github.com/puppetlabs/mimosa/sources/vmpooler"
-	"github.com/puppetlabs/mimosa/sources/vmpooler/common"
 )
 
 func main() {

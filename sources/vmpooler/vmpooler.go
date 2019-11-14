@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/johnmccabe/go-vmpooler/vm"
-	"github.com/puppetlabs/mimosa/sources/vmpooler/common"
+	"github.com/puppetlabs/mimosa/sources/common"
 )
 
 const vmpoolerEndpoint = "https://vmpooler.delivery.puppetlabs.net/api/v1"

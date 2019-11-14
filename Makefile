@@ -7,9 +7,7 @@
 
 COMPONENTS := \
 	api \
-	sources/aws \
-	sources/gcp \
-	sources/vmpooler \
+	sources \
 	system/reusabolt \
 	system/router \
 	system/usermgmt \

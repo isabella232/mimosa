@@ -1,4 +1,6 @@
 
+include ../build/common.mk
+
 check-env:
 ifndef UUID
 	$(error UUID must be defined)

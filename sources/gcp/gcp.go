@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/puppetlabs/mimosa/sources/gcp/common"
+	"github.com/puppetlabs/mimosa/sources/common"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 )

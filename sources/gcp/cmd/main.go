@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/puppetlabs/mimosa/sources/common"
 	"github.com/puppetlabs/mimosa/sources/gcp"
-	"github.com/puppetlabs/mimosa/sources/gcp/common"
 )
 
 func main() {

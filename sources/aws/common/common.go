@@ -89,11 +89,10 @@ func Collect(query func(config map[string]string) (map[string]MimosaData, error)
 			log.Printf("No change found: %s", id)
 		}
 	}
-
 	if err := pruneBucket(bucket, items); err != nil {
 		return err
 	}
-	// FIXME we need to remove delete items from checksums
+	checksums = pruneChecksums(checksums, items)
 	// Write state back to the bucket
 	data, err := json.Marshal(checksums)
 	if err != nil {
@@ -162,6 +161,15 @@ func deleteFromBucket(bucket *storage.BucketHandle, object string) error {
 	return oh.Delete(context.Background())
 }
 
+func pruneChecksums(checksums map[string]string, items map[string]MimosaData) map[string]string{
+	for k := range checksums {
+		if _, present := items[k]; !present {
+			log.Printf("Deleting checksum: %s", k)
+			delete(checksums, k)
+		}
+	}
+	return checksums
+}
 func pruneBucket(bucket *storage.BucketHandle, items map[string]MimosaData) error {
 	//list everything in the bucket and check it's not in items, then delete if so
 	it := bucket.Objects(context.Background(), nil)

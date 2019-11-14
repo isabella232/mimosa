@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Table, Message, Grid, List } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
+import HOST_DOCUMENT from '../utils/Fixtures/hosts_document';
+
 
 class HostDetail extends Component {
   constructor(props) {
@@ -12,14 +14,13 @@ class HostDetail extends Component {
       name: '-',
       status: '-',
     };
-    console.log('hello');
-    // if (this.props.firebase.auth.currentUser) {
-    //   this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-    //     this.setState({
-    //       cap: token.claims.cap
-    //     })
-    //   })
-    // }
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        this.setState({
+          cap: token.claims.cap
+        })
+      })
+    }
   }
 
     pullHost = (workspace, host) => {
@@ -29,8 +30,11 @@ class HostDetail extends Component {
             data: [{}]
           });
 
-          var data = querySnapshot.data();
-          console.log(data);
+          // real firestore data, uncomment to use
+          // var data = querySnapshot.data();
+
+          // fake fixture data, comment out to remove
+          var data = HOST_DOCUMENT;
 
           this.setState({
             hostname: data.hostname,
@@ -39,16 +43,7 @@ class HostDetail extends Component {
             status: data.state,
             source: data.source,
             time: data.timestamp,
-            tasks: [
-              {
-                task: "fact",
-                result: "foobar"
-              },
-              {
-                task: "more facts",
-                result: "wubalubadubsub"
-              }
-            ]
+            tasks: data.tasks
           })
         })
       })
@@ -112,15 +107,16 @@ class HostDetail extends Component {
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell>Task</Table.HeaderCell>
-                <Table.HeaderCell>Result</Table.HeaderCell>
+                <Table.HeaderCell>Status</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {tasks && tasks.map((task) => {
+              {tasks && Object.keys(tasks).map((key) => {
+                let singleTask = tasks[key]
                 return (
                   <Table.Row>
-                    <Table.Cell><Link to={`/ws/${workspace}/run/${task.task}`} >{task.task}</Link></Table.Cell>
-                    <Table.Cell>{task.result}</Table.Cell>
+                    <Table.Cell>{singleTask.name}</Table.Cell>
+                    <Table.Cell>{singleTask.status}</Table.Cell>
                   </Table.Row>
                 )
               })}

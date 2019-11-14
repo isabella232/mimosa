@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
+import HOSTS_COLLECTION from '../utils/Fixtures/hosts_collection.js';
 
 class HostDataTable extends Component {
   constructor(props) {
@@ -37,9 +38,6 @@ class HostDataTable extends Component {
           rowData["id"] = doc.id;
           stagingArray.push(rowData);
         });
-
-        // sort and store array in state
-        // stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
         this.setState({
           data: stagingArray,
         });
@@ -77,16 +75,15 @@ class HostDataTable extends Component {
 
   componentDidMount() {
     const { workspace } = this.props;
-    //fakeData to be used for styling, visual fixes, rather than hitting DB
     this.setState({
-      // data: fakeData,
+      data: HOSTS_COLLECTION, //comment out when not using fixture data
       hosts: [],
     });
-    this.pullHostData(workspace);
+    // pull the read data from firestore
+    // this.pullHostData(workspace);
   }
   setHost(e, data) {
     var { hosts } = this.state;
-    console.log(hosts);
     if (data.checked) {
       if (hosts && !hosts.includes(data.value)) {
         hosts.push(data.value);
@@ -100,13 +97,11 @@ class HostDataTable extends Component {
     this.setState({
       hosts: hosts,
     })
-    console.log(this.state.hosts);
   }
 
   runTask = () => {
     var { hosts } = this.state;
     var { workspace } = this.props;
-    console.log(hosts);
     this.props.history.push(`/ws/${workspace}/run-task`, { response: hosts });
   }
 

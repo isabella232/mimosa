@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { Table, Message, Grid } from 'semantic-ui-react';
+import RUN_DOCUMENT from '../utils/Fixtures/run_document';
+import { Link } from 'react-router-dom';
 
 class TaskDetail extends Component {
   constructor(props) {
@@ -25,35 +27,28 @@ class TaskDetail extends Component {
         this.setState({
           data: [{}],
         });
-        // iterate through docs, add id to doc
-        // add doc to array
-        // querySnapshot.forEach((doc) => {
-        //   console.log(doc);
-        // });
-        console.log(querySnapshot.data());
-        var data = querySnapshot.data();
-        var type, name, status, count, nodes, result;
-        if (data && data.items) {
-          data.items.map((item) => {
-            type = item.action;
-            name = item.object;
-            status = item.status;
-            nodes = item.node;
-            result = item.result
-            count = data.node_count;
-          })
-        }
 
+        // real firestore data, uncomment to use
+        // var data = querySnapshot.data();
+
+        // fake fixture data, comment to remove
+        var data = RUN_DOCUMENT;
+
+        var keys = Object.keys(data.hosts),
+            count = keys.length,
+            hosts = data.hosts;
+        var stagedHosts = [];
+        keys.forEach(key => {
+          hosts[key].docid = key;
+          stagedHosts.push(hosts[key]);
+        })
         this.setState({
-          type: type,
-          name: name,
-          status: status,
+          name: data.name,
+          user: data.displayname,
+          time: data.timestamp,
           count: count,
-          nodes: nodes,
-          result: JSON.stringify(result)
+          hosts: stagedHosts,
         });
-
-        // sort and store array in state
       });
     });
   }
@@ -61,26 +56,19 @@ class TaskDetail extends Component {
   componentDidMount() {
     const { workspace, task } = this.props;
     this.setState({
-      // data: fakeData,
       hosts: [],
     });
     this.pullTask(workspace, task);
   }
 
   render() {
-    const { data, type, name, status, count, nodes, result} = this.state
+    const { name, user, time, count, hosts } = this.state;
+    const { workspace } = this.props;
     
-    console.log(data);
     return (
       <div>
         <Grid columns='four' divided >
           <Grid.Row>
-            <Grid.Column>
-              <Message
-                header='Run type'
-                content={type}
-              />
-            </Grid.Column>
             <Grid.Column>
               <Message
                 header='Task name'
@@ -89,8 +77,14 @@ class TaskDetail extends Component {
             </Grid.Column>
             <Grid.Column>
               <Message
-                header='Run status'
-                content={status}
+                header='User'
+                content={user}
+              />
+            </Grid.Column>
+            <Grid.Column>
+              <Message
+                header='Timestamp'
+                content={time}
               />
             </Grid.Column>
             <Grid.Column>
@@ -109,14 +103,24 @@ class TaskDetail extends Component {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            <Table.Row>
-              <Table.Cell>{nodes}</Table.Cell>
-              <Table.Cell>{result}</Table.Cell>
-            </Table.Row>
+            {hosts && hosts.map((host) => {
+              console.log('hello single host ', host)
+              return (
+                <Table.Row>
+                  <Table.Cell>
+                    <Link to={`/ws/${workspace}/host/${host.docid}`}>{host.hostname}</Link>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {host.status}
+                  </Table.Cell>
+                </Table.Row>
+              )
+            })}
           </Table.Body>
         </Table>
       </div >
     )
   }
 }
+
 export default TaskDetail;

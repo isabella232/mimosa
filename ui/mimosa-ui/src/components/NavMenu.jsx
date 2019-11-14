@@ -33,7 +33,6 @@ class NavMenu extends Component {
   render() {
     const {activeItem} = this.state;
     const {authUser, workspace} = this.props;
-    console.log(authUser);
     if (!authUser) {
       this.props.history.push('/login');
     }

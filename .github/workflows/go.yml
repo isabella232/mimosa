@@ -1,5 +1,5 @@
-name: Go
-on: [push]
+name: Build Mimosa
+on: [push, pull_request]
 jobs:
 
   build:

@@ -1,4 +1,6 @@
 
+LINTER=$(shell go env GOPATH)/bin/golangci-lint
+
 PHONY+= all
 all: test tidy format lint
 	@echo "✅ Finished (`date '+%H:%M:%S'`)"
@@ -31,5 +33,5 @@ format:
 PHONY+= lint
 lint:
 	@echo "🔘 Linting ... (`date '+%H:%M:%S'`)"
-	@golangci-lint run
+	@${LINTER} run
 	@echo "✅ No lint errors found (`date '+%H:%M:%S'`)"

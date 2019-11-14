@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/puppetlabs/mimosa/sources/aws"
-	"github.com/puppetlabs/mimosa/sources/aws/common"
+	"github.com/puppetlabs/mimosa/sources/common"
 )
 
 func main() {

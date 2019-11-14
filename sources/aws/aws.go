@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/puppetlabs/mimosa/sources/aws/common"
+	"github.com/puppetlabs/mimosa/sources/common"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"

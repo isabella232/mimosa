@@ -166,7 +166,7 @@ func deleteFromBucket(bucket *storage.BucketHandle, object string) error {
 	return oh.Delete(context.Background())
 }
 
-func pruneChecksums(checksums map[string]string, items map[string]MimosaData) map[string]string{
+func pruneChecksums(checksums map[string]string, items map[string]MimosaData) map[string]string {
 	for k := range checksums {
 		if _, present := items[k]; !present {
 			log.Printf("Deleting checksum: %s", k)

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 )
 
 //
@@ -43,6 +44,13 @@ func unmarshalFromBucket(bucket *storage.BucketHandle, object string, v interfac
 		return err
 	}
 	return nil
+}
+
+func deleteFromBucket(bucket *storage.BucketHandle, object string) error {
+	defer LogTiming(time.Now(), "deleteObject")
+	log.Printf("Deleting: %s", object)
+	oh := bucket.Object(object)
+	return oh.Delete(context.Background())
 }
 
 func writeToBucket(bucket *storage.BucketHandle, object string, typ string, version string, data []byte) error {
@@ -125,6 +133,39 @@ func Collect(query func(config map[string]string) (map[Metadata][]byte, error)) 
 			log.Printf("Timing: Write: %dms", uint(time.Since(start).Seconds()*1000)) // Milliseconds not supported in Go 1.11
 		} else {
 			log.Printf("No change found: %s", id)
+		}
+	}
+
+	//list everything in the bucket and check it's not in items, then delete if so
+	it := bucket.Objects(context.Background(), nil)
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		id := attrs.Name
+		typ, hasType := attrs.Metadata["mimosa-type"]
+		version, hasVersion := attrs.Metadata["mimosa-type-version"]
+
+		if !hasType || !hasVersion {
+			// skip this one if it has insufficient metadata e.g. it's probably state.json or config.json
+			continue
+		}
+
+		key := Metadata{
+			ID: id,
+			Version: version,
+			Typ: typ,
+		}
+		if _, present := items[key]; !present {
+			err := deleteFromBucket(bucket, id)
+			if err != nil {
+				//consciously swallow this error to continue processing
+				log.Printf("Error deleting object %v: %v ", attrs.Name, err)
+			}
 		}
 	}
 

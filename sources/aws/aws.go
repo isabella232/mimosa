@@ -73,6 +73,10 @@ func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
 			id := *instance.InstanceId
+			state := *instance.State.Name
+			if state == "disabled" || state == "terminated" {
+				continue
+			}
 			data, err := json.Marshal(instance)
 			if err != nil {
 				return nil, err

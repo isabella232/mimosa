@@ -25,8 +25,9 @@ import (
 type MimosaData struct {
 	Version string
 	Typ     string
-	Data []byte
+	Data    []byte
 }
+
 // Collect data from an API and write it to Cloud Storage
 func Collect(query func(config map[string]string) (map[string]MimosaData, error)) error {
 	defer LogTiming(time.Now(), "Collect")
@@ -75,7 +76,11 @@ func Collect(query func(config map[string]string) (map[string]MimosaData, error)
 		start := time.Now()
 		previousChecksum, present := checksums[id]
 		sha := sha1.New()
-		sha.Write(item.Data)
+		_, err = sha.Write(item.Data)
+		if err != nil {
+			log.Printf("failed to compute SHA: %v", err)
+			continue
+		}
 		checksum := hex.EncodeToString(sha.Sum(nil))
 		if !present || checksum != previousChecksum {
 			err = writeToBucket(bucket, id, item.Typ, item.Version, item.Data)
@@ -182,10 +187,10 @@ func pruneBucket(bucket *storage.BucketHandle, items map[string]MimosaData) erro
 			return err
 		}
 		id := attrs.Name
-		
+
 		//FIXME I'm unsure why we have empty metadata on the state.json
 		typ, hasType := attrs.Metadata["mimosa-type"]
-		hasType = hasType && len(typ) > 0 
+		hasType = hasType && len(typ) > 0
 		version, hasVersion := attrs.Metadata["mimosa-type-version"]
 		hasVersion = hasVersion && len(version) > 0
 		if !hasType || !hasVersion {

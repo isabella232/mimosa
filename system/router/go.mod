@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.47.0 // indirect
 	cloud.google.com/go/pubsub v1.0.1
 	cloud.google.com/go/storage v1.1.1 // indirect
-	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	go.opencensus.io v0.22.1 // indirect

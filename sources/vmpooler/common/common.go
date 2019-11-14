@@ -113,7 +113,11 @@ func Collect(query func(config map[string]string) (map[Metadata][]byte, error)) 
 		start := time.Now()
 		previousChecksum, present := checksums[id]
 		sha := sha1.New()
-		sha.Write(item)
+		_, err = sha.Write(item)
+		if err != nil {
+			log.Printf("failed to compute SHA: %v", err)
+			continue
+		}
 		checksum := hex.EncodeToString(sha.Sum(nil))
 		if !present || checksum != previousChecksum {
 			err = writeToBucket(bucket, id, md.Typ, md.Version, item)

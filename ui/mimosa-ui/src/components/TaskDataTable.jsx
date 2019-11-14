@@ -1,8 +1,7 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
-import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
+import { Table } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
-import firebase from 'firebase';
+import RUN_COLLECTION from '../utils/Fixtures/run_collection';
 
 class TaskDataTable extends Component {
   constructor(props) {
@@ -41,7 +40,6 @@ class TaskDataTable extends Component {
         this.setState({
           data: stagingArray,
         });
-        // console.log(this.state.data);
       });
     });
   }
@@ -50,12 +48,14 @@ class TaskDataTable extends Component {
     const { workspace } = this.props;
     this.setState({
       hosts: [],
+      data: RUN_COLLECTION // fake fixture data, comment to remove
     });
-    this.pullHostData(workspace);
+    // Real firestore data, uncomment to use
+    // this.pullHostData(workspace);
   }
 
   render() {
-    var { data, cap, hosts } = this.state;
+    var { data } = this.state;
     const { workspace } = this.props;
     /**
      * Iterate through firestore data and render table
@@ -70,28 +70,19 @@ class TaskDataTable extends Component {
         <Table className="table">
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>ID</Table.HeaderCell>
               <Table.HeaderCell>Task</Table.HeaderCell>
-              <Table.HeaderCell>Node Count</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
+              <Table.HeaderCell>Note</Table.HeaderCell>
+              <Table.HeaderCell>User</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {data && data.map((taskData) => {
-              var task, status;
-              if (taskData.items) {
-                taskData.items.map((item) => {
-                  task = item.object;
-                  status = item.status;
-                  return;
-                })
-              }
+              console.log(taskData.hosts);
               return (
                 <Table.Row>
-                  <Table.Cell><Link to={`/ws/${workspace}/run/${taskData.id}`}>{taskData.id}</Link></Table.Cell>
-                  <Table.Cell>{task}</Table.Cell>
-                  <Table.Cell>{taskData.node_count}</Table.Cell>
-                  <Table.Cell>{status}</Table.Cell>
+                  <Table.Cell><Link to={`/ws/${workspace}/run/${taskData.id}`}>{taskData.name}</Link></Table.Cell>
+                  <Table.Cell>{taskData.note}</Table.Cell>
+                  <Table.Cell>{taskData.displayname}</Table.Cell>
                 </Table.Row>
               )
             })}

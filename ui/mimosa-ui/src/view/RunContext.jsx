@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container, Divider, Header } from 'semantic-ui-react';
-import TaskDataTable from '../components/TaskDataTable';
-import NavMenu from '../components/NavMenu';
+import {TaskDataTable} from '../components';
+import {NavMenu} from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
 

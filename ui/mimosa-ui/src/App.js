@@ -1,15 +1,17 @@
 import React, {Component} from 'react';
 import 'semantic-ui-css/semantic.min.css'
 import './App.css'
-import MimosaHeader from './components/MimosaHeader';
-import Login from './view/Login';
-import HostsView from './view/HostsView'
-import RunTask from './view/RunTask';
-import Home from './view/Home';
-import Workspaces from './view/Workspaces'
-import RunContext from './view/RunContext.jsx'
-import RunDetail from './view/RunDetail.jsx'
-import HostDetailView from './view/HostDetailView.jsx';
+import {MimosaHeader} from './components';
+import {
+  Login,
+  HostsView,
+  RunTask,
+  Home,
+  Workspaces,
+  RunContext,
+  RunDetail,
+  HostDetailView
+} from './view';
 import {
   BrowserRouter as Router,
   Route,

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import NavMenu from '../components/NavMenu';
+import {NavMenu} from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
 import {Container, Divider, Header, Form, Button, Message, List} from 'semantic-ui-react';
 
 class RunTask extends Component {
   render() {
-    const { authUser, firebase } = this.props;
+    const { authUser } = this.props;
     const { wsid } = this.props.match.params;
     var hasHosts;
     if(this.props.location.state && this.props.location.state.response.length > 0) {

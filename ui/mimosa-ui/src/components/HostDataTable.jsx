@@ -1,8 +1,7 @@
-import _ from 'lodash';
 import React, {Component} from 'react';
 import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
-import firebase from 'firebase';
+import HOSTS_COLLECTION from '../utils/Fixtures/hosts_collection.js';
 
 class HostDataTable extends Component {
   constructor(props) {
@@ -13,7 +12,6 @@ class HostDataTable extends Component {
       hosts: [],
     }
     this.setHost = this.setHost.bind(this);
-    this.setAllHost = this.setAllHost.bind(this);
     this.runTask = this.runTask.bind(this);
     if (this.props.firebase.auth.currentUser) {
       this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
@@ -40,9 +38,6 @@ class HostDataTable extends Component {
           rowData["id"] = doc.id;
           stagingArray.push(rowData);
         });
-
-        // sort and store array in state
-        // stagingArray = _.sortBy(stagingArray, ["state", "source", "public_dns"]);
         this.setState({
           data: stagingArray,
         });
@@ -80,16 +75,15 @@ class HostDataTable extends Component {
 
   componentDidMount() {
     const { workspace } = this.props;
-    //fakeData to be used for styling, visual fixes, rather than hitting DB
     this.setState({
-      // data: fakeData,
+      data: HOSTS_COLLECTION, //comment out when not using fixture data
       hosts: [],
     });
-    this.pullHostData(workspace);
+    // pull the read data from firestore
+    // this.pullHostData(workspace);
   }
   setHost(e, data) {
     var { hosts } = this.state;
-    console.log(hosts);
     if (data.checked) {
       if (hosts && !hosts.includes(data.value)) {
         hosts.push(data.value);
@@ -103,23 +97,16 @@ class HostDataTable extends Component {
     this.setState({
       hosts: hosts,
     })
-    console.log(this.state.hosts);
-  }
-
-  setAllHost(e, data) {
-    var { data, hosts } = this.state;
-    console.log(data);
   }
 
   runTask = () => {
     var { hosts } = this.state;
     var { workspace } = this.props;
-    console.log(hosts);
     this.props.history.push(`/ws/${workspace}/run-task`, { response: hosts });
   }
 
   render() {
-    var { data, cap, hosts } = this.state;
+    var { data } = this.state;
     /**
      * Iterate through firestore data and render table
      * the document ID is used in Task Output button
@@ -147,20 +134,17 @@ class HostDataTable extends Component {
               <Table.HeaderCell>Source</Table.HeaderCell>
               <Table.HeaderCell>State</Table.HeaderCell>
               <Table.HeaderCell>
-                <Checkbox className="all-hosts" disabled onChange={this.setAllHost} />
                 Host Select
               </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {data && data.map((listVal) => {
-              var rowState, showButton;
+              var rowState;
               if (listVal.state === 'terminated') {
                 rowState = false;
-                showButton = false;
               } else {
                 rowState = true;
-                showButton = true;
               }
               var {workspace} = this.props;
               return (

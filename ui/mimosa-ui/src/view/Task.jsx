@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Divider, Message } from 'semantic-ui-react';
-import NavMenu from '../components/NavMenu';
+import {NavMenu} from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
 

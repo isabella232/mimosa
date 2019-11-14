@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Grid, Message, Table, Header, Icon, Button, Divider } from 'semantic-ui-react';
+import { Container, Grid, Message, Table, Header, Icon, Button } from 'semantic-ui-react';
 import { withRouter } from 'react-router';
 import { withFirebase } from '../utils/Firebase';
 

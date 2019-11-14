@@ -21,7 +21,7 @@ func HandleMessage(ctx context.Context, m *pubsub.Message) error {
 }
 
 // Query gathers intances data from vmpooler
-func Query(config map[string]string) (map[common.Metadata][]byte, error) {
+func Query(config map[string]string) (map[string]common.MimosaData, error) {
 	defer common.LogTiming(time.Now(), "vmpooler.Query")
 
 	// Validate config
@@ -38,7 +38,7 @@ func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 	}
 
 	// Gather instances
-	items := map[common.Metadata][]byte{}
+	items := map[string]common.MimosaData{}
 	for _, vm := range virtualmachines {
 		// Zero out fields that change every time
 		vm.Running = 0
@@ -49,12 +49,11 @@ func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		key := common.Metadata{
-			ID:      id,
+		items[id] = common.MimosaData{
 			Version: "1.0",
-			Typ:     "vmp-instance",
+			Typ:     "aws-instance",
+			Data:    data,
 		}
-		items[key] = data
 	}
 
 	return items, nil

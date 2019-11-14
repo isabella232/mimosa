@@ -26,7 +26,7 @@ func HandleMessage(ctx context.Context, m sourceMessage) error {
 }
 
 // Query gathers intances data from AWS
-func Query(config map[string]string) (map[common.Metadata][]byte, error) {
+func Query(config map[string]string) (map[string]common.MimosaData, error) {
 	defer common.LogTiming(time.Now(), "aws.Query")
 
 	// Validate config
@@ -69,24 +69,23 @@ func Query(config map[string]string) (map[common.Metadata][]byte, error) {
 	}
 
 	// Gather instances
-	items := map[common.Metadata][]byte{}
+	items := map[string]common.MimosaData{}
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
 			id := *instance.InstanceId
 			state := *instance.State.Name
-			if state == "disabled" || state == "terminated" {
+			if state == "terminated" {
 				continue
 			}
 			data, err := json.Marshal(instance)
 			if err != nil {
 				return nil, err
 			}
-			key := common.Metadata{
-				ID:      id,
+			items[id] = common.MimosaData{
 				Version: "1.0",
 				Typ:     "aws-instance",
+				Data:    data,
 			}
-			items[key] = data
 		}
 	}
 	return items, nil

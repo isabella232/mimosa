@@ -74,12 +74,12 @@ class Login extends Component {
                 />
                 <Button onClick={this.emailLogin} color='teal' fluid size='large'>
                   Login
-          </Button>
+                </Button>
 
                 <Divider />
                 <Button onClick={this.googleLogin} color='teal' fluid size='large'>
                   Login with Google
-        </Button>
+                </Button>
 
               </Segment>
             </Form>

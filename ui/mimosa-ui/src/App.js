@@ -10,9 +10,11 @@ import {
   Workspaces,
   RunContext,
   RunDetail,
-  HostDetailView
+  HostDetailView,
+  NotFound
 } from './view';
 import {
+  Switch,
   BrowserRouter as Router,
   Route,
 } from "react-router-dom";
@@ -49,7 +51,7 @@ class App  extends Component {
         <div>
           <MimosaHeader />
           <Router history={history}>
-            <div>
+            <Switch>
               <Route exact path="/login" render={() => <Login authUser={this.state.authUser} history={history} />} firebase={firebase} />
               <Route exact path="/ws/:wsid/home" authUser={this.state.authUser} render={() => <Home authUser={this.state.authUser} history={history} firebase={firebase}  />}/>
               <Route exact path="/ws" render={() => <Workspaces authUser={this.state.authUser} firebase={firebase}/>} />
@@ -58,7 +60,8 @@ class App  extends Component {
               <Route exact path="/ws/:wsid/run-context" render={() => <RunContext authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run/:runid" render={() => <RunDetail authUser={this.state.authUser} firebase={firebase} />} />
-            </div>
+              <Route render={() => <NotFound /> } />
+            </Switch>
           </Router>
         </div>
     )

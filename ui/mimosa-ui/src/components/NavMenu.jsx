@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Menu, Button } from 'semantic-ui-react';
 import {withRouter} from 'react-router';
 import { withFirebase } from '../utils/Firebase';
-
+import cookie from 'react-cookies';
 import {Link} from 'react-router-dom'; 
 
 class NavMenu extends Component {
@@ -14,7 +14,9 @@ class NavMenu extends Component {
   }
 
   handle_logout = () => {
+    cookie.remove('userEmail', "loggedIn");
     this.props.firebase.auth.signOut().then(() => {
+      console.log(cookie.loadAll());
       this.props.history.push('/login')
     }).catch((error) => {
       alert(error)
@@ -29,11 +31,11 @@ class NavMenu extends Component {
   goLogin = () => {
     this.props.history.push('/login');
   }
-
   render() {
     const {activeItem} = this.state;
-    const {authUser, workspace} = this.props;
-    if (!authUser) {
+    const {workspace} = this.props;
+    var authUser = !!cookie.load('userEmail');
+    if (!cookie.load('userEmail')) {
       this.props.history.push('/login');
     }
     var prefix = `/ws/${workspace}`

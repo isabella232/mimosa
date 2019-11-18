@@ -10,6 +10,7 @@
     "firebase": "^7.2.2",
     "firebase-admin": "^8.6.1",
     "react": "^16.11.0",
+    "react-cookies": "^0.1.1",
     "react-dom": "^16.11.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
@@ -37,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint-plugin-react-hooks": "^2.3.0"
   }
 }

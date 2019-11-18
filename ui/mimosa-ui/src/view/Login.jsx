@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Header, Segment, Icon, Grid, Divider, Form, Button, Container } from 'semantic-ui-react';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
-
+import cookie from 'react-cookies';
 
 const INITIAL_STATE = {
   email: '',
@@ -35,8 +35,11 @@ class Login extends Component {
   googleLogin = () => {
     const googleProvider = this.props.firebase.googleProv
     this.props.firebase.auth.signInWithPopup(googleProvider).then((result) => {
-      console.log(result);
-      this.props.history.push('/ws')
+      if (result && result.user.email) {
+        console.log(result.user.email);
+        cookie.save("userEmail", "loggedIn", { path: '/', maxAge: 10000, secure: true, httpOnly: true });
+        this.props.history.push('/ws')
+      }
     }).catch((error) => {
       alert(error);
     });
@@ -45,9 +48,14 @@ class Login extends Component {
 
   emailLogin = () => {
     var { email, password } = this.state;
-    this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((authUser) => {
-      this.setState({ ...INITIAL_STATE });
-      this.props.history.push('/ws')
+    this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((result) => {
+      if(result && result.user.email) {
+        console.log("This one now! ", result.user.email);
+        cookie.save("userEmail", "loggedIn");
+        cookie.loadAll();
+        this.setState({ ...INITIAL_STATE });
+        this.props.history.push('/ws')
+      }
     }).catch((error) => {
       alert(error)
       this.setState({ ...INITIAL_STATE });
@@ -74,12 +82,12 @@ class Login extends Component {
                 />
                 <Button onClick={this.emailLogin} color='teal' fluid size='large'>
                   Login
-          </Button>
+                </Button>
 
                 <Divider />
                 <Button onClick={this.googleLogin} color='teal' fluid size='large'>
                   Login with Google
-        </Button>
+                </Button>
 
               </Segment>
             </Form>

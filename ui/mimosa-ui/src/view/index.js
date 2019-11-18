@@ -6,6 +6,7 @@ import Workspaces from './Workspaces'
 import RunContext from './RunContext.jsx'
 import RunDetail from './RunDetail.jsx'
 import HostDetailView from './HostDetailView.jsx';
+import NotFound from './NotFound.jsx';
 
 export {
   Login,
@@ -15,5 +16,6 @@ export {
   Workspaces,
   RunContext,
   RunDetail,
-  HostDetailView
+  HostDetailView,
+  NotFound
 }

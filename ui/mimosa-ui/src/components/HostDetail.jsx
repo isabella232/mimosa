@@ -113,9 +113,14 @@ class HostDetail extends Component {
             <Table.Body>
               {tasks && Object.keys(tasks).map((key) => {
                 let singleTask = tasks[key]
+                console.log(key);
                 return (
                   <Table.Row>
-                    <Table.Cell>{singleTask.name}</Table.Cell>
+                    <Table.Cell>
+                      <Link to={`/ws/${workspace}/run/${key}`}>
+                        {singleTask.name}
+                      </Link>
+                    </Table.Cell>
                     <Table.Cell>{singleTask.status}</Table.Cell>
                   </Table.Row>
                 )

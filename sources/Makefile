@@ -1,9 +1,6 @@
 
 include ../build/common.mk
 
-lint:
-	@echo LINT DISABLED FOUR SOURCES UNTIL THE GCP ERRORS ARE FIXED
-
 check-env:
 ifndef UUID
 	$(error UUID must be defined)
@@ -13,6 +10,9 @@ ifndef SOURCE
 endif
 ifndef CONFIG_FILE
 	$(error CONFIG_FILE must be defined)
+endif
+ifndef FUNC
+	$(error FUNC must be defined)
 endif
 
 NAME=source-${UUID}
@@ -26,20 +26,20 @@ deploy: check-env
 		--runtime go111 \
 		--trigger-topic ${NAME} \
 		--set-env-vars MIMOSA_GCP_BUCKET=${NAME}, \
-		--source ${SOURCE} \
-		--entry-point=HandleMessage \
+		--source . \
+		--entry-point=${FUNC} \
 		${NAME}
 	@echo "✅ Deployed system-reusabolt (`date '+%H:%M:%S'`)"
 
 # Separating these dependencies allows parallel deployment
 GENERATED_UUID := ${shell uuidgen| awk '{print tolower($0)}'}
-create-source:
+create:
 	@echo "🔘 Creating source-${GENERATED_UUID} ... (`date '+%H:%M:%S'`)"
 	@gsutil mb -b on gs://source-${GENERATED_UUID}
 	@gcloud pubsub topics create source-${GENERATED_UUID}
 	@echo "✅ Created source-${GENERATED_UUID} (`date '+%H:%M:%S'`)"
 
-delete-source:
+delete:
 ifndef UUID
 	$(error UUID must be defined)
 endif
@@ -49,12 +49,3 @@ endif
 	@-gcloud functions delete --quiet source-${UUID}
 	@-gcloud functions delete --quiet system-router-${UUID}
 	@echo "✅ Deleted source-${UUID} (`date '+%H:%M:%S'`)"
-
-# Separating these dependencies allows parallel deployment
-deploy-source: --deploy-source-function --deploy-router
-
---deploy-source-function:
-	$(MAKE) -C sources deploy UUID=${UUID}
-
---deploy-router:
-	$(MAKE) -C system/router deploy UUID=${UUID}

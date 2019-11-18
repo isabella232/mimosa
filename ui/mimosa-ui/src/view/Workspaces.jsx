@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Container, Grid, Message, Table, Header, Icon, Button } from 'semantic-ui-react';
 import { withRouter } from 'react-router';
 import { withFirebase } from '../utils/Firebase';
+import cookie from 'react-cookies';
 
 import './workspaces.css'
 
@@ -28,8 +29,10 @@ class Workspaces extends Component {
   }
 
   componentDidMount() {
-    const { authUser } = this.props;
-    if (!authUser) {
+    const { authUser } = !!cookie.load('userEmail');
+    console.log("HELLO! ", cookie.loadAll());
+    if (!cookie.load('userEmail')) {
+      console.log("Im in here, noooo")
       this.props.history.push('/login');
     }
     this.pullWorkspace();

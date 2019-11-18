@@ -20,6 +20,7 @@ import {
 } from "react-router-dom";
 import { withFirebase } from './utils/Firebase';
 import history from './utils/history';
+import cookie from 'react-cookies';
 
 // The router will only allow access to login for 
 // users that have not logged in. 
@@ -47,6 +48,7 @@ class App  extends Component {
 
   render() {
     const {firebase} = this.props;
+    console.log(cookie.load('userEmail'));
     return (
         <div>
           <MimosaHeader />

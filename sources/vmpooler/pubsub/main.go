@@ -5,12 +5,23 @@ import (
 	"log"
 	"os"
 
+	"github.com/puppetlabs/mimosa/sources/common"
+
 	"github.com/puppetlabs/mimosa/sources/vmpooler"
 
 	"cloud.google.com/go/pubsub"
 )
 
 func main() {
+
+	// FIXME
+	//
+	// This code supported running on-prem. It needs revisited.
+	//
+	// There is no longer a topic per source so this might not be the right way to trigger a source to run. It might be that sources
+	// poll a cloud function or we use IOT or just run every X minutes. We also need to secure bucket writes via Identity Platform accounts which can perhaps be
+	// done with security rules but might also need an "upload" cloud function.
+	//
 
 	//check that GOOGLE_APPLICATION_CREDENTIALS is set as this (json file) will be used to create a new storage.NewClient(ctx)
 	//the project_id is configured in the json file, see: https://cloud.google.com/docs/authentication/getting-started
@@ -42,7 +53,7 @@ func main() {
 	err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		msg.Ack()
 		log.Printf("Got message: %s %q", string(msg.ID), string(msg.Data))
-		err := vmpooler.HandleMessage(ctx, msg)
+		err := common.Build(vmpooler.Query)(ctx, msg)
 		if err != nil {
 			log.Fatalf("failed to handle message: %v", err)
 		}

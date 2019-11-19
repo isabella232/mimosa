@@ -3,10 +3,11 @@ package usermgmt
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/base32"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -47,13 +48,32 @@ type userRecord struct {
 
 }
 
+//
+// This function generates a random workspace ID
+//
+// We have 3 requirements:
+// * We want the IDs to be short because we want to fit as many as possible into a JWT custom claim, which is limited to 1000 bytes
+// * We want the ID space to be as large as possible so that we don't run out if we have millions of workspaces
+// * Workspace IDs are also used as bucket labels in GCS and so must be lower case (ruling out base 64 encoding)
+//
+// Our solution is to use 25-bit IDs encoded as 5 base-32 characters
+//
 func generateWorkspaceID() (string, error) {
-	b := make([]byte, 3)
+	// We generate a cryptographically random number into a byte array
+	// We only need 25 bits but that still means an array of length 4 to fit it all in
+	b := make([]byte, 4)
 	_, err := rand.Read(b)
 	if err != nil {
 		return "", err
 	}
-	return base64.URLEncoding.EncodeToString(b), err
+	// Encode the whole 32 bits into base-32
+	encoded := base32.StdEncoding.EncodeToString(b)
+	// We only need 25 bits so let's take the first 5 base-32 chars and discard the rest
+	encoded = encoded[:5]
+	// Base-32 is encoded in upper case, so we convert to lower case
+	encoded = strings.ToLower(encoded)
+	// We're done!
+	return encoded, err
 }
 
 // UserCreated responds to creation of Identity Platform users

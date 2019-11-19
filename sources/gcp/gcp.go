@@ -11,15 +11,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-type sourceMessage struct {
-	Data []byte `json:"data"`
-}
-
-// HandleMessage from the matching topic telling this source to run
-func HandleMessage(ctx context.Context, m sourceMessage) error {
-	return common.Collect(Query)
-}
-
 // Query gathers intances data from AWS
 func Query(config map[string]string) (map[string]common.MimosaData, error) {
 	defer common.LogTiming(time.Now(), "gcp.Query")
@@ -60,7 +51,7 @@ func Query(config map[string]string) (map[string]common.MimosaData, error) {
 		}
 		items[id] = common.MimosaData{
 			Version: "1.0",
-			Typ:     "aws-instance",
+			Typ:     "gcp-instance",
 			Data:    data,
 		}
 	}

@@ -1,7 +1,6 @@
 package aws
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,15 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
-
-type sourceMessage struct {
-	Data []byte `json:"data"`
-}
-
-// HandleMessage from the matching topic telling this source to run
-func HandleMessage(ctx context.Context, m sourceMessage) error {
-	return common.Collect(Query)
-}
 
 // Query gathers intances data from AWS
 func Query(config map[string]string) (map[string]common.MimosaData, error) {

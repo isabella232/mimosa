@@ -14,8 +14,8 @@ class NavMenu extends Component {
   }
 
   handle_logout = () => {
-    cookie.remove('userEmail', "loggedIn");
     this.props.firebase.auth.signOut().then(() => {
+      cookie.remove("userEmail", { path: '/'});
       console.log(cookie.loadAll());
       this.props.history.push('/login')
     }).catch((error) => {

@@ -52,9 +52,10 @@ class Login extends Component {
       if(result && result.user.email) {
         console.log("This one now! ", result.user.email);
         cookie.save("userEmail", "loggedIn", { path: '/' });
+        let uid = result.user.uid;
         cookie.loadAll();
         this.setState({ ...INITIAL_STATE });
-        this.props.history.push('/ws')
+        this.props.history.push('/ws', { payload: uid})
       }
     }).catch((error) => {
       alert(error)

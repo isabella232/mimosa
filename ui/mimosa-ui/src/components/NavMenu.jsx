@@ -46,24 +46,24 @@ class NavMenu extends Component {
       <div>
         {authUser ?
           <Menu pointing vertical fixed inverted className="side-nav">
-            <Menu.Item
+            {/* <Menu.Item
               name='home'
               active={activeItem === 'home'}
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/home'}
-            />
+            /> */}
             <Menu.Item
               name='host list'
               active={activeItem === 'host list'}
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/hosts'}
             />
-            <Menu.Item
+            {/* <Menu.Item
               name='run context'
               active={activeItem === 'run context'}
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/run-context'}
-            />
+            /> */}
             <Menu.Item
               name='start run'
               active={activeItem === 'start run'}

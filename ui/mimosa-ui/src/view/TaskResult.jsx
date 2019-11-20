@@ -13,39 +13,38 @@ class Home extends Component {
   }
   //Collect the id from param route and use in firestore call
   componentDidMount() {
-    const { nodeId } = this.props.match.params;
+    const { wsid, runid } = this.props.match.params;
     console.log(this.props);
-    this.pullTaskData(nodeId);
+    this.pullTaskData(wsid, runid);
   }
 
-  pullTaskData = (documentId) => {
-    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      var taskResult = ''
-      this.props.firebase.app.firestore().collection("ws").doc(token.claims.defaultws).collection("tasks")
-        .orderBy("timestamp", "desc").limit(1).get()
-        .then(querySnapshot => {
-          querySnapshot.forEach((doc) => {
-            taskResult = JSON.stringify(doc.data(), null, 2);
+  pullTaskData = (workspace, documentId) => {
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        var taskResult = ''
+        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(documentId).get()
+          .then(querySnapshot => {
+            console.log(querySnapshot.data());
+            var stringOutput = JSON.stringify(querySnapshot.data());
+            this.setState({
+              data: stringOutput
+            })
           })
-          this.setState({
-            data: taskResult
-          })
-        })
-    });
+      });
+    }
   }
   render() {
     const { data } = this.state;
     const { authUser } = this.props;
+    const { wsid } = this.props.match.params;
     return (
       <div>
-        <NavMenu authUser={authUser} activePath="task" />
+        <NavMenu authUser={authUser} workspace={wsid} activePath="task" />
         <Container>
           <Divider />
-          <Message>
+          <Message style={{overflowWrap: "break-word"}}>
             <Message.Header>Task Output</Message.Header>
-            <pre>
               {data}
-            </pre>
           </Message>
         </Container>
       </div>

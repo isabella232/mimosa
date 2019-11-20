@@ -7,6 +7,7 @@ import RunContext from './RunContext.jsx'
 import RunDetail from './RunDetail.jsx'
 import HostDetailView from './HostDetailView.jsx';
 import NotFound from './NotFound.jsx';
+import TaskResult from './TaskResult.jsx';
 
 export {
   Login,
@@ -17,5 +18,6 @@ export {
   RunContext,
   RunDetail,
   HostDetailView,
-  NotFound
+  NotFound,
+  TaskResult
 }

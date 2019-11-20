@@ -11,7 +11,8 @@ import {
   RunContext,
   RunDetail,
   HostDetailView,
-  NotFound
+  NotFound,
+  TaskResult
 } from './view';
 import {
   Switch,
@@ -61,7 +62,7 @@ class App  extends Component {
               <Route exact path="/ws/:wsid/host/:hostid" render={() => <HostDetailView authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-context" render={() => <RunContext authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
-              <Route exact path="/ws/:wsid/run/:runid" render={() => <RunDetail authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/run/:runid" render={() => <TaskResult authUser={this.state.authUser} firebase={firebase} />} />
               <Route render={() => <NotFound /> } />
             </Switch>
           </Router>

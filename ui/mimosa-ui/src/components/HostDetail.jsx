@@ -53,7 +53,7 @@ class HostDetail extends Component {
     pullTask = (workspace) => {
       if (this.props.firebase.auth.currentUser) {
         this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-          this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").onSnapshot((querySnapshot) => {
+          this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
             var temp = []
             querySnapshot.forEach((doc) => {
               console.log(doc);

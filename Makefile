@@ -8,31 +8,19 @@
 COMPONENTS := \
 	api \
 	sources \
+	docker \
 	system/reusabolt \
 	system/router \
 	system/usermgmt \
 	worldbuilders/inventory
 
-DEPLOYABLE := \
-	api \
-	system/reusabolt \
-	system/usermgmt \
-	worldbuilders/inventory
-
-DEPLOYABLE_COMPONENTS = $(addprefix deploy-, $(DEPLOYABLE))
-
 .PHONY: $(COMPONENTS)
 
 all: $(COMPONENTS)
 test: $(COMPONENTS)
-deploy: $(DEPLOYABLE_COMPONENTS)
+deploy: $(COMPONENTS)
 
 $(COMPONENTS):
 	@echo
 	@echo "🔘 ===> Component $@ ..."
 	@$(MAKE) -C $@ $(MAKECMDGOALS)
-
-$(DEPLOYABLE_COMPONENTS):
-	@echo
-	@echo "🔘 ===> Deploying $(@:deploy-%=%) ..."
-	@$(MAKE) -C $(@:deploy-%=%) $(MAKECMDGOALS)

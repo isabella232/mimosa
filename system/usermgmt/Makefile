@@ -2,8 +2,8 @@
 include ../../build/common.mk
 
 check-env:
-ifndef GCP_PROJECT
-	$(error GCP_PROJECT must be defined)
+ifndef MIMOSA_GCP_PROJECT
+	$(error MIMOSA_GCP_PROJECT must be defined)
 endif
 
 PHONY+= deploy
@@ -13,7 +13,7 @@ deploy: check-env
 		--runtime go111 \
 		--no-allow-unauthenticated \
 		--trigger-event providers/firebase.auth/eventTypes/user.create \
-		--trigger-resource ${GCP_PROJECT} \
+		--trigger-resource ${MIMOSA_GCP_PROJECT} \
 		--source . \
 		--entry-point UserCreated \
 		system-usercreation

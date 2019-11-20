@@ -22,11 +22,15 @@ Set the MIMOSA_GCP_PROJECT environment variable to match your project ID (not pr
 
 Configure gcloud to use the correct project ID (not project name):
 
-    gcloud config set project mimosa-255913
+    gcloud config set project $MIMOSA_GCP_PROJECT
 
 Enable Firestore in Native Mode in your new project: [TODO Which region should we choose? For now, anything is fine]:
 
     https://console.cloud.google.com/firestore
+
+Configure docker to work with GCP for cloud run:
+
+    gcloud auth configure-docker
 
 You may find that GCP asks you to enable particular APIs or to enable billing as you deploy mimosa e.g. if you have not yet enabled Cloud Functions you may see a message like this. Choose "y".
 
@@ -49,46 +53,25 @@ Deploy Mimosa like this:
 
 There are also per-module Makefiles to allow deployment of individual Cloud Functions.
 
-Sources must be deployed using the Makefile in the `sources` dir:
+### Sources 
 
-    cd sources
-    make create-source
-    make deploy-source
+Sources must be created individually:
 
-## Cloud Run
+    WORKSPACE=xxxxx CONFIG_FILE=xxx.json make -C sources create 
 
-To deploy the runner container to Cloud Run you need to perform a one-time setup step to configure docker to authenticate with GCP:
+The workspace id can be obtained from firestore.
 
-    gcloud auth configure-docker
+The config file contains credentials and other configuration for your source. We recommend following the principle of least privilege. You can create a dedicated account for the target cloud provider with read-only permissions and use the credentials for that account in mimosa. Do not upload high privilege creds to mimosa at this stage! [TODO We need additional docs here explaining how to achieve this.]
 
-To build the container (substitute your own GCP project ID):
+The following example assumes AWS. You will need your AWS access key, secret key and region. Create a file called "config.json" and put the values in there:
 
-    cd docker
-    docker build . -t gcr.io/PROJECT_ID/runner
-
-To run locally:
-
-    docker run -a STDOUT -a STDERR -it --env PORT=8080 -p 8080:8080 gcr.io/PROJECT_ID/runner
-
-To test, create a customized payload that contains your AWS instance details and PEM file contents and run:
-
-    curl localhost:8080 --data-binary "@payload.json"
-
-Push to GCR like this:
-
-    docker push gcr.io/mimosa-256008/runner
-
-Deploy in Cloud Run:
-
-    gcloud beta run deploy --image gcr.io/mimosa-256008/runner --platform managed --region europe-west1 --no-allow-unauthenticated runner
-
-Test using this handy Google supplied alias:
-
-    alias gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'\n
-
-Now test the deployment:
-
-    gcurl  https://runner-xxxx-ew.a.run.app --data-binary "@payload.json"
+```
+{
+    "region": "eu-west-1",
+    "accessKey": "AKIAIOSFODNN7EXAMPLE",
+    "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+}
+```
 
 ## Extensible Service Proxy (ESP)
 
@@ -137,7 +120,7 @@ Now try an authenticated call using a Firebase token:
 
 We use [berglas](https://github.com/GoogleCloudPlatform/berglas) for secrets which should be installed locally as described in their README to allow secrets to be added to Mimosa.
 
-Once the berglas bootstrap process has completed there'll be a new KMS key and storage bucket.
+Berglas is set up as part of mimosa deployment.
 
 The service account running the "system-reusabolt" cloud function (likely "App Engine default service account") needs some additional permissions:
 
@@ -169,19 +152,3 @@ This means you can associate a key with each host but you can also simplify deve
 Upload a secret, like the pem file you got from AWS, as follows. Using "edit" helps avoid problems with your shell mangling your private key:
 
     EDITOR="code -w" berglas edit mimosa-berglas/default
-
-## Sources
-
-### Source credentials
-
-You will need credentials and other configuration for your source. We recommend following the principle of least privilege. You can create a dedicated account for the target cloud provider with read-only permissions and use the credentials for that account in mimosa. Do not upload high privilege creds to mimosa at this stage! [TODO We need additional docs here explaining how to achieve this.]
-
-The following example assumes AWS. You will need your AWS access key, secret key and region. Create a file called "config.json" and put the values in there:
-
-```
-{
-    "region": "eu-west-1",
-    "accessKey": "AKIAIOSFODNN7EXAMPLE",
-    "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-}
-```

@@ -2,27 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"log"
 
 	firebase "firebase.google.com/go"
 )
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-func generateRandomString(s int) (string, error) {
-	b, err := generateRandomBytes(s)
-	return base64.URLEncoding.EncodeToString(b), err
-}
 
 // Code to attach custom claims to Identity Platform users
 //

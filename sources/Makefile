@@ -1,51 +1,65 @@
 
 include ../build/common.mk
 
-check-env:
-ifndef UUID
-	$(error UUID must be defined)
-endif
-ifndef SOURCE
-	$(error SOURCE must be defined)
+# FIXME remove this once the GCP lint errors are fixed
+lint:
+	@echo "No linting until GCP errors are fixed ..."
+
+SOURCE_NAME:=source-${shell uuidgen | awk '{print tolower($0)}'}
+
+PHONY+= create
+create:
+ifndef WORKSPACE
+	$(error WORKSPACE must be defined)
 endif
 ifndef CONFIG_FILE
 	$(error CONFIG_FILE must be defined)
 endif
-ifndef FUNC
-	$(error FUNC must be defined)
-endif
-
-NAME=source-${UUID}
-
-PHONY+= deploy
-deploy: check-env
+	@echo "🔘 Creating ${SOURCE_NAME} ... (`date '+%H:%M:%S'`)"
+	@echo "🔘 Creating bucket ${SOURCE_NAME} ... (`date '+%H:%M:%S'`)"
+	@gsutil mb -b on gs://${SOURCE_NAME}
+	@echo "🔘 Labelling bucket ... (`date '+%H:%M:%S'`)"
+	@gsutil label ch -l ws:${WORKSPACE} gs://${SOURCE_NAME}
 	@echo "🔘 Copying config to bucket ... (`date '+%H:%M:%S'`)"
-	gsutil cp ${CONFIG_FILE} gs://${NAME}/config.json
-	@echo "🔘 Deploying ${NAME} ... (`date '+%H:%M:%S'`)"
-	@gcloud functions deploy \
-		--runtime go111 \
-		--trigger-topic ${NAME} \
-		--set-env-vars MIMOSA_GCP_BUCKET=${NAME}, \
-		--source . \
-		--entry-point=${FUNC} \
-		${NAME}
-	@echo "✅ Deployed system-reusabolt (`date '+%H:%M:%S'`)"
-
-# Separating these dependencies allows parallel deployment
-GENERATED_UUID := ${shell uuidgen| awk '{print tolower($0)}'}
-create:
-	@echo "🔘 Creating source-${GENERATED_UUID} ... (`date '+%H:%M:%S'`)"
-	@gsutil mb -b on gs://source-${GENERATED_UUID}
-	@gcloud pubsub topics create source-${GENERATED_UUID}
-	@echo "✅ Created source-${GENERATED_UUID} (`date '+%H:%M:%S'`)"
+	@gsutil cp ${CONFIG_FILE} gs://${SOURCE_NAME}/config.json
+	@echo "🔘 Enabling notifications ... (`date '+%H:%M:%S'`)"
+	@gsutil notification create -f json -t system-router gs://${SOURCE_NAME}
+	@echo "✅ Created ${SOURCE_NAME} (`date '+%H:%M:%S'`)"
 
 delete:
-ifndef UUID
-	$(error UUID must be defined)
+ifndef NAME
+	$(error NAME must be defined)
 endif
-	@echo "🔘 Deleting source-${UUID} ... (`date '+%H:%M:%S'`)"
-	@-gsutil rm -r gs://source-${UUID}
-	@-gcloud pubsub topics delete source-${UUID}
-	@-gcloud functions delete --quiet source-${UUID}
-	@-gcloud functions delete --quiet system-router-${UUID}
-	@echo "✅ Deleted source-${UUID} (`date '+%H:%M:%S'`)"
+	@echo "🔘 Deleting bucket ${NAME} ... (`date '+%H:%M:%S'`)"
+	@-gsutil rm -r gs://${NAME}
+	@echo "✅ Deleted bucket ${NAME} (`date '+%H:%M:%S'`)"
+
+# Use "make deploy -j" for parallel deployment
+PHONY+= deploy
+deploy: deploy-aws deploy-gcp deploy-vmpooler
+	@echo "✅ All deployments finished (`date '+%H:%M:%S'`)"
+
+PHONY+= deploy-aws
+deploy-aws:
+	${call deploy-source,source-aws,AWS}
+
+PHONY+= deploy-gcp
+deploy-gcp:
+	${call deploy-source,source-gcp,GCP}
+
+PHONY+= deploy-vmpooler
+deploy-vmpooler:
+	${call deploy-source,source-vmpooler,VMPooler}
+
+define deploy-source
+	@echo "🔘 Deploying ${1} ... (`date '+%H:%M:%S'`)"
+	@if ! gcloud pubsub topics describe ${1} &> /dev/null; then gcloud pubsub topics create ${1}; fi
+	@gcloud functions deploy \
+		--runtime go111 \
+		--no-allow-unauthenticated \
+		--trigger-topic ${1} \
+		--source . \
+		--entry-point=${2} \
+		${1}
+	@echo "✅ Deployed ${1} (`date '+%H:%M:%S'`)"
+endef

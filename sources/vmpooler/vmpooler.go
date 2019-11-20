@@ -1,24 +1,15 @@
 package vmpooler
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"time"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/johnmccabe/go-vmpooler/vm"
 	"github.com/puppetlabs/mimosa/sources/common"
 )
 
 const vmpoolerEndpoint = "https://vmpooler.delivery.puppetlabs.net/api/v1"
-const myToken = "fzssuuj7tjfmh7ppa7rty2tc16texrf6"
-
-// HandleMessage from the matching topic telling this source to run
-func HandleMessage(ctx context.Context, m *pubsub.Message) error {
-	log.Printf("Received pubsub message: %s", m.ID)
-	return common.Collect(Query)
-}
+const myToken = "xxxx"
 
 // Query gathers intances data from vmpooler
 func Query(config map[string]string) (map[string]common.MimosaData, error) {
@@ -51,7 +42,7 @@ func Query(config map[string]string) (map[string]common.MimosaData, error) {
 		}
 		items[id] = common.MimosaData{
 			Version: "1.0",
-			Typ:     "aws-instance",
+			Typ:     "vmpooler-instance",
 			Data:    data,
 		}
 	}

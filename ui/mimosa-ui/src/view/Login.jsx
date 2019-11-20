@@ -37,7 +37,7 @@ class Login extends Component {
     this.props.firebase.auth.signInWithPopup(googleProvider).then((result) => {
       if (result && result.user.email) {
         console.log(result.user.email);
-        cookie.save("userEmail", "loggedIn", { path: '/', maxAge: 10000, secure: true, httpOnly: true });
+        cookie.save("userEmail", "loggedIn", { path: '/' });
         this.props.history.push('/ws')
       }
     }).catch((error) => {
@@ -51,7 +51,7 @@ class Login extends Component {
     this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((result) => {
       if(result && result.user.email) {
         console.log("This one now! ", result.user.email);
-        cookie.save("userEmail", "loggedIn");
+        cookie.save("userEmail", "loggedIn", { path: '/' });
         cookie.loadAll();
         this.setState({ ...INITIAL_STATE });
         this.props.history.push('/ws')

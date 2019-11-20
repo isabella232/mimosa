@@ -20,37 +20,39 @@ class TaskDetail extends Component {
   }
 
   pullTask = (workspace, task) => {
-    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      // onSnapshot will update view if firestore updates
-      this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(task).onSnapshot((querySnapshot) => {
-        // reset data to avoid duplication
-        this.setState({
-          data: [{}],
-        });
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        // onSnapshot will update view if firestore updates
+        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(task).onSnapshot((querySnapshot) => {
+          // reset data to avoid duplication
+          this.setState({
+            data: [{}],
+          });
 
-        // real firestore data, uncomment to use
-        // var data = querySnapshot.data();
+          // real firestore data, uncomment to use
+          var data = querySnapshot.data();
 
-        // fake fixture data, comment to remove
-        var data = RUN_DOCUMENT;
+          // fake fixture data, comment to remove
+          // var data = RUN_DOCUMENT;
 
-        var keys = Object.keys(data.hosts),
-            count = keys.length,
-            hosts = data.hosts;
-        var stagedHosts = [];
-        keys.forEach(key => {
-          hosts[key].docid = key;
-          stagedHosts.push(hosts[key]);
-        })
-        this.setState({
-          name: data.name,
-          user: data.displayname,
-          time: data.timestamp,
-          count: count,
-          hosts: stagedHosts,
+          var keys = Object.keys(data.hosts),
+              count = keys.length,
+              hosts = data.hosts;
+          var stagedHosts = [];
+          keys.forEach(key => {
+            hosts[key].docid = key;
+            stagedHosts.push(hosts[key]);
+          })
+          this.setState({
+            name: data.name,
+            user: data.displayname,
+            time: data.timestamp,
+            count: count,
+            hosts: stagedHosts,
+          });
         });
       });
-    });
+    }
   }
 
   componentDidMount() {

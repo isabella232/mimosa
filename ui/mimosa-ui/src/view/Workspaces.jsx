@@ -16,16 +16,15 @@ class Workspaces extends Component {
   }
 
   pullWorkspace = () => {
-    this.props.firebase.app.firestore().collection("ws").onSnapshot((querySnapshot) => {
-      var stagingArray = []
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id);
-        stagingArray.push(doc.id);
-      });
-      this.setState({
-        data: stagingArray
+    if(this.props.location.state && this.props.location.state.payload.length > 0) {
+      var uid = this.props.location.state.payload
+      this.props.firebase.app.firestore().collection("users").doc(uid).onSnapshot((querySnapshot) => {
+        var workspace = querySnapshot.data().workspaces;
+        this.setState({
+          data: workspace
+        })
       })
-    })
+    }
   }
 
   componentDidMount() {
@@ -38,17 +37,15 @@ class Workspaces extends Component {
     this.pullWorkspace();
   }
   handleClick = (name) => {
-    console.log(name);
     this.props.history.push(`/ws/${name}/hosts`);
   }
 
   render() {
     const {data} = this.state;
-
     return (
       <Container>
         <Grid textAlign='center' style={{ height: '100vh' }}  verticalAlign='middle'>
-          <Grid.Column style={{ maxWidth: 450 }}>
+          <Grid.Column style={{ maxWidth: 600 }}>
             <Message>
               <Header as='h2' color='teal' textAlign='center'>
                 <Icon name="cube" />Select from your workspaces
@@ -61,16 +58,16 @@ class Workspaces extends Component {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {data && data.map((name) => {
+                  {data && Object.entries(data).map(([key, value]) => {
                     return (
                       <Table.Row>
                         <Table.Cell style={{ textAlign: "center" }} className="view-source-name">
-                          {name}
-                    </Table.Cell>
+                          <Button className="view-source-button" onClick={() => this.handleClick(key)}>
+                            {key}
+                          </Button>
+                        </Table.Cell>
                         <Table.Cell>
-                          <Button className="view-source-button" onClick={() => this.handleClick(name)}>
-                            Enter workspace
-                      </Button>
+                          {value}
                         </Table.Cell>
                       </Table.Row>
                     )

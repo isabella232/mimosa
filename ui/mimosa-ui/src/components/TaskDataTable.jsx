@@ -21,37 +21,38 @@ class TaskDataTable extends Component {
   }
 
   pullHostData = (workspace) => {
-    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      var stagingArray = [];
-      // onSnapshot will update view if firestore updates
-      this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").onSnapshot((querySnapshot) => {
-        // reset data to avoid duplication
-        this.setState({
-          data: [{}],
-        });
-        // iterate through docs, add id to doc
-        // add doc to array
-        querySnapshot.forEach((doc) => {
-          var rowData = doc.data();
-          rowData["id"] = doc.id;
-          stagingArray.push(rowData);
-        });
-
-        this.setState({
-          data: stagingArray,
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        var stagingArray = [];
+        // onSnapshot will update view if firestore updates
+        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").onSnapshot((querySnapshot) => {
+          // reset data to avoid duplication
+          this.setState({
+            data: [{}],
+          });
+          // iterate through docs, add id to doc
+          // add doc to array
+          querySnapshot.forEach((doc) => {
+            var rowData = doc.data();
+            rowData["id"] = doc.id;
+            stagingArray.push(rowData);
+          });
+          this.setState({
+            data: stagingArray,
+          });
         });
       });
-    });
+    }
   }
 
   componentDidMount() {
     const { workspace } = this.props;
     this.setState({
       hosts: [],
-      data: RUN_COLLECTION // fake fixture data, comment to remove
+      // data: RUN_COLLECTION // fake fixture data, comment to remove
     });
     // Real firestore data, uncomment to use
-    // this.pullHostData(workspace);
+    this.pullHostData(workspace);
   }
 
   render() {

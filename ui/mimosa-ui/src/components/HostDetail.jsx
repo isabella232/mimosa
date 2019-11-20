@@ -81,7 +81,7 @@ class HostDetail extends Component {
       const {workspace} = this.props;
       return (
         <div>
-          <Grid columns='four' divided>
+          <Grid columns='two'>
             <Grid.Row>
               <Grid.Column>
                 <Message
@@ -95,6 +95,8 @@ class HostDetail extends Component {
                   content={ip}
                 />
               </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
               <Grid.Column>
                 <Message
                   header='Name'

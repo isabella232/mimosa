@@ -24,29 +24,31 @@ class HostDetail extends Component {
   }
 
     pullHost = (workspace, host) => {
-      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").doc(host).onSnapshot((querySnapshot) => {
-          this.setState({
-            data: [{}]
-          });
+      if (this.props.firebase.auth.currentUser) {
+        this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+          this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").doc(host).onSnapshot((querySnapshot) => {
+            this.setState({
+              data: [{}]
+            });
 
-          // real firestore data, uncomment to use
-          // var data = querySnapshot.data();
+            // real firestore data, uncomment to use
+            var data = querySnapshot.data();
 
-          // fake fixture data, comment out to remove
-          var data = HOST_DOCUMENT;
+            // fake fixture data, comment out to remove
+            // var data = HOST_DOCUMENT;
 
-          this.setState({
-            hostname: data.hostname,
-            ip: data.ip,
-            name: data.name,
-            status: data.state,
-            source: data.source,
-            time: data.timestamp,
-            tasks: data.tasks
+            this.setState({
+              hostname: data.hostname,
+              ip: data.ip,
+              name: data.name,
+              status: data.state,
+              source: data.source,
+              time: data.timestamp,
+              tasks: data.tasks
+            })
           })
         })
-      })
+      }
     }
 
     componentDidMount() {

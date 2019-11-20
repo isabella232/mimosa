@@ -23,64 +23,65 @@ class HostDataTable extends Component {
   }
 
   pullHostData = (workspace) => {
-    this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-      var stagingArray = [];
-      // onSnapshot will update view if firestore updates
-      this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").get().then((querySnapshot) => {
-        // reset data to avoid duplication
-        this.setState({
-          data: [{}],
-        });
-        // iterate through docs, add id to doc
-        // add doc to array
-        querySnapshot.forEach((doc) => {
-          var rowData = doc.data();
-          rowData["id"] = doc.id;
-          stagingArray.push(rowData);
-        });
-        this.setState({
-          data: stagingArray,
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+        var stagingArray = [];
+        // onSnapshot will update view if firestore updates
+        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").get().then((querySnapshot) => {
+          // reset data to avoid duplication
+          this.setState({
+            data: [{}],
+          });
+          // iterate through docs, add id to doc
+          // add doc to array
+          querySnapshot.forEach((doc) => {
+            var rowData = doc.data();
+            rowData["id"] = doc.id;
+            stagingArray.push(rowData);
+          });
+          this.setState({
+            data: stagingArray,
+          });
         });
       });
-    });
+    }
   }
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, hostid) => {
-
-    this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
-      // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
-      fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-        referrer: 'no-referrer',
-        body: JSON.stringify({ "workspace": "ws1", "id": hostid })
-      }).then(response => {
-        // console.log(response.status)
-        // console.log(response.text())
-      })
-        .catch(error => {
-          console.error('Error during Mimosa:', error);
-        });
-
-    }).catch(function (error) {
-      console.error('Error during Mimosa:', error);
-    });
-
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
+        // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
+        fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          redirect: 'follow',
+          referrer: 'no-referrer',
+          body: JSON.stringify({ "workspace": "ws1", "id": hostid })
+        }).then(response => {
+          // console.log(response.status)
+          // console.log(response.text())
+        })
+          .catch(error => {
+            console.error('Error during Mimosa:', error);
+          });
+      }).catch(function (error) {
+        console.error('Error during Mimosa:', error);
+      });
+    }
   }
 
   componentDidMount() {
     const { workspace } = this.props;
     this.setState({
-      data: HOSTS_COLLECTION, //comment out when not using fixture data
+      // data: HOSTS_COLLECTION, //comment out when not using fixture data
       hosts: [],
     });
     // pull the read data from firestore
-    // this.pullHostData(workspace);
+    this.pullHostData(workspace);
   }
   setHost(e, data) {
     var { hosts } = this.state;

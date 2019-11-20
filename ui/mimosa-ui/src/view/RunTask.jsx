@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import {NavMenu} from '../components';
+import { NavMenu } from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
-import {Container, Divider, Header, Form, Button, Message, Dropdown} from 'semantic-ui-react';
+import { Container, Divider, Header, Form, Button, Message, Dropdown } from 'semantic-ui-react';
 
 class RunTask extends Component {
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, hostid) => {
     if (this.props.firebase.auth.currentUser) {
-      var wsid = this.props.match.params;
+      var wsid = this.props.match.params.wsid;
       this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
         // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
         fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
@@ -39,7 +39,7 @@ class RunTask extends Component {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
     var hasHosts, docId;
-    if(this.props.location.state && this.props.location.state.response.length > 0) {
+    if (this.props.location.state && this.props.location.state.response.length > 0) {
       hasHosts = this.props.location.state.response
       docId = this.props.location.state.doc
     } else {
@@ -48,7 +48,7 @@ class RunTask extends Component {
     console.log(hasHosts);
     console.log('From data state ', hasHosts);
     const option = [
-      {text: hasHosts, value: hasHosts}
+      { text: hasHosts, value: hasHosts }
     ]
     return (
       <div>
@@ -59,11 +59,11 @@ class RunTask extends Component {
           <Form>
             <Form.Field>
               <label>Task Name</label>
-              <input value="facts"/>
+              <input value="facts" />
             </Form.Field>
             <Form.Field disabled>
               <label>Params</label>
-              <input placeholder="e.g. verbose"/>
+              <input placeholder="e.g. verbose" />
             </Form.Field>
             <Form.Field disabled>
               <label>Note</label>
@@ -77,7 +77,7 @@ class RunTask extends Component {
                   defaultValue={option[0].value}
                 />
                 <Divider />
-                <Button onClick={this.callCloudFunction('facts', docId)} type="submit">Run</Button>
+                <Button onClick={this.callCloudFunction('api/v1/runtask', docId)} type="submit">Run</Button>
               </div>
               :
               <div>

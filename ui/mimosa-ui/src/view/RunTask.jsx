@@ -23,6 +23,8 @@ class RunTask extends Component {
         }).then(response => {
           // console.log(response.status)
           // console.log(response.text())
+          var wsid = this.props.match.params;
+          this.props.history.push('/ws/' + wsid + '/host/' + hostid);
         })
           .catch(error => {
             console.error('Error during Mimosa:', error);
@@ -36,9 +38,10 @@ class RunTask extends Component {
   render() {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
-    var hasHosts;
+    var hasHosts, docId;
     if(this.props.location.state && this.props.location.state.response.length > 0) {
       hasHosts = this.props.location.state.response
+      docId = this.props.location.state.doc
     } else {
       hasHosts = false;
     }
@@ -74,7 +77,7 @@ class RunTask extends Component {
                   defaultValue={option[0].value}
                 />
                 <Divider />
-                <Button type="submit">Run</Button>
+                <Button onClick={this.callCloudFunction('facts', docId)} type="submit">Run</Button>
               </div>
               :
               <div>
@@ -85,9 +88,7 @@ class RunTask extends Component {
                   <p>Please select hosts from Host list and select Run Task</p>
                 </Message>
               </div>
-
             }
-            
           </Form>
         </Container>
       </div>

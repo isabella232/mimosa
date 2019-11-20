@@ -69,11 +69,10 @@ class HostDataTable extends Component {
     })
   }
 
-  runTask = (hello) => {
-    console.log(hello);
-    var { hosts } = this.state;
+  runTask = (hostname, docId) => {
+    console.log(hostname, docId);
     var { workspace } = this.props;
-    this.props.history.push(`/ws/${workspace}/run-task`, { response: hello });
+    this.props.history.push(`/ws/${workspace}/run-task`, { response: hostname, doc: docId});
   }
 
   render() {
@@ -118,7 +117,7 @@ class HostDataTable extends Component {
                   <Table.Cell>{listVal.source}</Table.Cell>
                   <Table.Cell>{listVal.state}</Table.Cell>
                   <Table.Cell>
-                    <Button primary onClick={() => this.runTask(listVal.hostname)}>
+                    <Button primary onClick={() => this.runTask(listVal.hostname, listVal.id)}>
                       Run Task&nbsp;
                       <Icon name='bolt' />
                     </Button>

@@ -64,12 +64,12 @@ class NavMenu extends Component {
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/run-context'}
             /> */}
-            <Menu.Item
+            {/* <Menu.Item
               name='start run'
               active={activeItem === 'start run'}
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/run-task'}
-            />
+            /> */}
             <Button
               className='login'
               onClick={this.handle_logout}

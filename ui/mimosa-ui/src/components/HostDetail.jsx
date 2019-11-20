@@ -44,7 +44,26 @@ class HostDetail extends Component {
               status: data.state,
               source: data.source,
               time: data.timestamp,
-              tasks: data.tasks
+            })
+          })
+        })
+      }
+    }
+
+    pullTask = (workspace) => {
+      if (this.props.firebase.auth.currentUser) {
+        this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
+          this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").onSnapshot((querySnapshot) => {
+            var temp = []
+            querySnapshot.forEach((doc) => {
+              console.log(doc);
+              var docData = doc.data();
+              docData["id"] = doc.id;
+              temp.push(docData);
+            })
+            console.log(temp);
+            this.setState({
+              tasks: temp
             })
           })
         })
@@ -54,6 +73,7 @@ class HostDetail extends Component {
     componentDidMount() {
       const { workspace, host } = this.props;
       this.pullHost(workspace, host);
+      this.pullTask(workspace);
     }
 
     render() {
@@ -105,25 +125,24 @@ class HostDetail extends Component {
               </List.Content>
             </List.Item>
           </List>
-          <Table className="table">
+          <Table className="table" style={{tableLayout: "fixed", width: "100%"}}>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Task</Table.HeaderCell>
+                <Table.HeaderCell style={{width: "20%"}}>Task</Table.HeaderCell>
                 <Table.HeaderCell>Status</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {tasks && Object.keys(tasks).map((key) => {
-                let singleTask = tasks[key]
-                console.log(key);
+              {tasks && tasks.map((singleTask) => {
+                console.log(singleTask.id);
                 return (
                   <Table.Row>
                     <Table.Cell>
-                      <Link to={`/ws/${workspace}/run/${key}`}>
-                        {singleTask.name}
+                      <Link to={`/ws/${workspace}/run/${singleTask.id}`}>
+                        {singleTask.timestamp}
                       </Link>
                     </Table.Cell>
-                    <Table.Cell>{singleTask.status}</Table.Cell>
+                    <Table.Cell style={{overflow: "hidden", textOverflow: "ellipsis"}}>{singleTask.error.Stderr}</Table.Cell>
                   </Table.Row>
                 )
               })}

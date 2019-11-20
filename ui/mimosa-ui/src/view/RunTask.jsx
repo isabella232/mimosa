@@ -5,6 +5,34 @@ import { withRouter } from 'react-router-dom';
 import {Container, Divider, Header, Form, Button, Message, Dropdown} from 'semantic-ui-react';
 
 class RunTask extends Component {
+  // Call cloud function, since we don't expect result we don't do anything
+  callCloudFunction = (functionName, hostid) => {
+    if (this.props.firebase.auth.currentUser) {
+      this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
+        // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
+        fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          redirect: 'follow',
+          referrer: 'no-referrer',
+          body: JSON.stringify({ "workspace": "ws1", "id": hostid })
+        }).then(response => {
+          // console.log(response.status)
+          // console.log(response.text())
+        })
+          .catch(error => {
+            console.error('Error during Mimosa:', error);
+          });
+      }).catch(function (error) {
+        console.error('Error during Mimosa:', error);
+      });
+    }
+  }
+
   render() {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
@@ -17,7 +45,7 @@ class RunTask extends Component {
     console.log(hasHosts);
     console.log('From data state ', hasHosts);
     const option = [
-      {text: hasHosts[0], value: hasHosts[0]}
+      {text: hasHosts, value: hasHosts}
     ]
     return (
       <div>

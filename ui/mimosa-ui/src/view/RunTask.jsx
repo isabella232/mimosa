@@ -8,6 +8,7 @@ class RunTask extends Component {
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, hostid) => {
     if (this.props.firebase.auth.currentUser) {
+      var wsid = this.props.match.params;
       this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
         // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
         fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
@@ -19,11 +20,10 @@ class RunTask extends Component {
           },
           redirect: 'follow',
           referrer: 'no-referrer',
-          body: JSON.stringify({ "workspace": "ws1", "id": hostid })
+          body: JSON.stringify({ "workspace": wsid, "id": hostid })
         }).then(response => {
           // console.log(response.status)
           // console.log(response.text())
-          var wsid = this.props.match.params;
           this.props.history.push('/ws/' + wsid + '/host/' + hostid);
         })
           .catch(error => {

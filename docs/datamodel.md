@@ -97,7 +97,6 @@ Mimosa lays out documents as follows:
 * `/ws/<workspaceid>`
 * `/ws/<workspaceid>/hosts/<hostid>`
 * `/ws/<workspaceid>/tasks/<taskid>`
-* `/ws/<workspaceid>/results/<resultid>`
 
 Timestamps are RFC 3339 formatted strings.
 
@@ -147,16 +146,12 @@ The document contains information about the host and has the following fields:
     "timestamp": " 2019-11-07T14:39:00Z",
     "tasks": {
         "431687819d0085067de627c7d74def727cc9dee8": {
-            "name": "puppetlabs/package",
             "status": "success",
             "timestamp": " 2019-11-07T14:39:00Z",
-            "resultid":"9def8bca087006c43c3e2501ac98bf2546fe250d"
-     },
+        },
         "c43c3e2501ac98bf2546fe250d9def8bca087006": {
-            "name": "puppetlabs/service",
             "status": "failure",
             "timestamp": " 2019-11-07T14:39:00Z",
-            "resultid":"6c43c3e2501ac98bf2546fe250d9def8bca08700"
         }
     }
 }
@@ -165,41 +160,6 @@ The document contains information about the host and has the following fields:
 #### Task document
 
 The document ID is allocated by Firestore. Clients find it by listing the `tasks` subcollection in the chosen workspace.
-
-The document contains information about the task and has the following fields:
-
-```json
-{
-    "name": "puppetlabs/package",
-    "params": {
-        "name": "openssl",
-        "version": "1.2.3",
-        "package_manager": "yum"
-    },
-    "note": "Upgrading a package",
-    "timestamp": " 2019-11-07T14:39:00Z",
-    "uid": "OdudPCfFz4TvOjuhPEDGl8IAv6s2",
-    "displayname": "Alice Ackerman",
-    "hosts": {
-        "27c7d74def727cc9dee8431687819d0085067de6": {
-            "hostname": "ec2-54-166-212-236.compute-1.amazonaws.com",
-            "status": "success",
-            "timestamp": " 2019-11-07T14:39:00Z",
-            "resultid":"9def8bca087006c43c3e2501ac98bf2546fe250d"
-      },
-        "46fe250d9def8bca087006c43c3e2501ac98bf25": {
-            "hostname": "ec2-55-166-212-236.compute-1.amazonaws.com",
-            "status": "failure",
-            "timestamp": " 2019-11-07T14:39:00Z",
-            "resultid":"250d9def8bca087006c43c3e2501ac98bf2546fe"
-        }
-    }
-}
-```
-
-#### Results document
-
-The document ID is allocated by Firestore. Clients find it in the `hosts` field of a `task` document or the `tasks` field of a `host` document.
 
 The document contains the raw output from Bolt for a single task on a single host. The format is determined by Bolt.
 

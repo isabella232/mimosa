@@ -25,7 +25,7 @@ deploy: ensure-secrets-bucket check-env
 		--runtime go111 \
 		--no-allow-unauthenticated \
 		--trigger-topic reusabolt \
-		--set-env-vars MIMOSA_SERVICE_URL=${SERVICE_URL},MIMOSA_SECRETS_BUCKET=${shell gsutil ls | grep mimosa-secrets | grep -o -E "gs:\/\/[^\/]+"} \
+		--set-env-vars MIMOSA_SERVICE_URL=${SERVICE_URL},MIMOSA_SECRETS_BUCKET=${shell gsutil ls | grep mimosa-secrets | grep -o -E "mimosa-secrets-[^\/]+"} \
 		--source . \
 		--entry-point TriggerReusabolt \
 		system-reusabolt

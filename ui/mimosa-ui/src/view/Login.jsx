@@ -37,8 +37,9 @@ class Login extends Component {
     this.props.firebase.auth.signInWithPopup(googleProvider).then((result) => {
       if (result && result.user.email) {
         console.log(result.user.email);
+        let uid = result.user.uid;
         cookie.save("userEmail", "loggedIn", { path: '/' });
-        this.props.history.push('/ws')
+        this.props.history.push('/ws', { payload: uid})
       }
     }).catch((error) => {
       alert(error);

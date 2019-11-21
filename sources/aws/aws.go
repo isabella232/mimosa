@@ -36,7 +36,8 @@ func Query(config map[string]string) (map[string]common.MimosaData, error) {
 		Credentials: credentials.NewStaticCredentials(
 			config["accessKey"],
 			config["secretKey"],
-			""),
+			config["sessionToken"],
+		),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Cannot create an AWS session: %v", err)

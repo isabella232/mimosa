@@ -2,15 +2,24 @@ import React, { Component } from 'react';
 import { NavMenu } from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
-import { Container, Divider, Header, Form, Button, Message, Dropdown } from 'semantic-ui-react';
+import { Container, Divider, Header, Form, Button, Message, Icon } from 'semantic-ui-react';
 
 class RunTask extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      isLoading: false,
+      isTaskTriggered: false,
+      isError: false
+    }
   }
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, hostid) => {
     var {wsid} = this.props.match.params;
+    this.setState({
+      isLoading: true,
+      isTaskTriggered: true,
+    });
     if (this.props.firebase.auth.currentUser) {
       this.props.firebase.auth.currentUser.getIdToken().then((idToken) => {
         // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
@@ -25,20 +34,37 @@ class RunTask extends Component {
           referrer: 'no-referrer',
           body: JSON.stringify({ "workspace": wsid, "id": hostid })
         }).then(response => {
-          this.props.history.push('/ws/' + wsid + '/host/' + hostid);
+          this.setState({
+            isLoading: false,
+          });
         })
           .catch(error => {
             console.error('Error during Mimosa:', error);
+            this.setState({
+              isLoading: false,
+              isError: true,
+            });
           });
       }).catch(function (error) {
         console.error('Error during Mimosa:', error);
+        this.setState({
+          isLoading: false,
+          isError: true,
+        });
       });
     }
+  }
+
+  viewHost = (hostid) => {
+    const { wsid } = this.props.match.params;
+    this.props.history.push('/ws/' + wsid + '/host/' + hostid);
   }
 
   render() {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
+    const { isLoading, isTaskTriggered, isError } = this.state;
+
     var hasHosts, docId;
     if (this.props.location.state && this.props.location.state.response.length > 0) {
       hasHosts = this.props.location.state.response
@@ -46,8 +72,6 @@ class RunTask extends Component {
     } else {
       hasHosts = false;
     }
-    console.log(hasHosts);
-    console.log('From data state ', hasHosts);
     const option = [
       { text: hasHosts, value: hasHosts }
     ]
@@ -78,7 +102,28 @@ class RunTask extends Component {
                   defaultValue={option[0].value}
                 />
                 <Divider />
-                <Button onClick={() => this.callCloudFunction('api/v1/runtask', docId)} type="submit">Run</Button>
+                {isTaskTriggered ? (
+                  <Button
+                    color={isError ? 'red' : 'teal'}
+                    loading={isLoading}
+                  >
+                    {isError ? "Error" : 'Complete'}
+                  </Button>
+                ) : (
+                  <Button
+                    color="purple"
+                    onClick={() => this.callCloudFunction('api/v1/runtask', docId)}
+                  >
+                    <Icon name="play circle outline" />
+                    Run Task
+                  </Button>
+                )}
+                <Button
+                  color="teal"
+                  onClick={() => this.viewHost(docId)}
+                >
+                  View Host Data
+                </Button>
               </div>
               :
               <div>

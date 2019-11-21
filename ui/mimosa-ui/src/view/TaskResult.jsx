@@ -14,7 +14,6 @@ class Home extends Component {
   //Collect the id from param route and use in firestore call
   componentDidMount() {
     const { wsid, runid } = this.props.match.params;
-    console.log(this.props);
     this.pullTaskData(wsid, runid);
   }
 
@@ -24,7 +23,6 @@ class Home extends Component {
         var taskResult = ''
         this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(documentId).get()
           .then(querySnapshot => {
-            console.log(querySnapshot.data());
             var stringOutput = JSON.stringify(querySnapshot.data(), "", 2);
             this.setState({
               data: stringOutput
@@ -44,7 +42,7 @@ class Home extends Component {
           <Divider />
           <Message style={{ overflowWrap: "break-word" }}>
             <Message.Header>Task Output</Message.Header>
-            <pre>{data}</pre>
+            <pre style={{ overflow: "auto" }}>{data}</pre>
           </Message>
         </Container>
       </div>

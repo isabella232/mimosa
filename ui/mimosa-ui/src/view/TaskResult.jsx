@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Divider, Message } from 'semantic-ui-react';
-import {NavMenu} from '../components';
+import { NavMenu } from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
 
@@ -25,7 +25,7 @@ class Home extends Component {
         this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").doc(documentId).get()
           .then(querySnapshot => {
             console.log(querySnapshot.data());
-            var stringOutput = JSON.stringify(querySnapshot.data());
+            var stringOutput = JSON.stringify(querySnapshot.data(), "", 2);
             this.setState({
               data: stringOutput
             })
@@ -42,9 +42,9 @@ class Home extends Component {
         <NavMenu authUser={authUser} workspace={wsid} activePath="task" />
         <Container>
           <Divider />
-          <Message style={{overflowWrap: "break-word"}}>
+          <Message style={{ overflowWrap: "break-word" }}>
             <Message.Header>Task Output</Message.Header>
-              {data}
+            <pre>{data}</pre>
           </Message>
         </Container>
       </div>

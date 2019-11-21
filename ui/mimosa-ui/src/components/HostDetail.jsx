@@ -44,26 +44,7 @@ class HostDetail extends Component {
             status: data.state,
             source: data.source,
             time: data.timestamp,
-          })
-        })
-      })
-    }
-  }
-
-  pullTask = (workspace) => {
-    if (this.props.firebase.auth.currentUser) {
-      this.props.firebase.auth.currentUser.getIdTokenResult().then((token) => {
-        this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("tasks").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
-          var temp = []
-          querySnapshot.forEach((doc) => {
-            console.log(doc);
-            var docData = doc.data();
-            docData["id"] = doc.id;
-            temp.push(docData);
-          })
-          console.log(temp);
-          this.setState({
-            tasks: temp
+            tasks: data.tasks,
           })
         })
       })
@@ -73,7 +54,6 @@ class HostDetail extends Component {
   componentDidMount() {
     const { workspace, host } = this.props;
     this.pullHost(workspace, host);
-    this.pullTask(workspace);
   }
 
   render() {
@@ -135,16 +115,17 @@ class HostDetail extends Component {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {tasks && tasks.map((singleTask) => {
-              console.log(singleTask.id);
+            {tasks && Object.keys(tasks).map((key) => {
               return (
                 <Table.Row>
                   <Table.Cell>
-                    <Link to={`/ws/${workspace}/run/${singleTask.id}`}>
-                      {singleTask.timestamp}
+                    <Link to={`/ws/${workspace}/run/${key}`}>
+                      {tasks[key].timestamp}
                     </Link>
                   </Table.Cell>
-                  <Table.Cell style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{singleTask.error.Stderr}</Table.Cell>
+                  <Table.Cell>
+                    {tasks[key].status}
+                  </Table.Cell>
                 </Table.Row>
               )
             })}

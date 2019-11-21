@@ -28,6 +28,11 @@ type payload struct {
 	KeyMaterial []byte `json:"keymaterial"`
 }
 
+type task struct {
+	Status    string `firestore:"status"`
+	Timestamp string `firestore:"timestamp"`
+}
+
 // TriggerReusabolt runs Cloud Run functions in response to pubsub messages
 func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	log.Printf("Received pubsub message: %s", m.Data)
@@ -71,7 +76,8 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return err
 	}
-	host, err := fc.Collection("ws").Doc(target.Workspace).Collection("hosts").Doc(target.ID).Get(ctx)
+	hostRef := fc.Collection("ws").Doc(target.Workspace).Collection("hosts").Doc(target.ID)
+	host, err := hostRef.Get(ctx)
 	if err != nil {
 		return err
 	}
@@ -100,6 +106,26 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 	log.Printf("Service URL: %s", serviceURL)
 
+	// Write the task result placeholder
+	taskRef, _, err := fc.Collection("ws").Doc(target.Workspace).Collection("tasks").Add(ctx, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+
+	// Update the host with a task reference
+	task := task{
+		Status:    "running",
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+	_, err = hostRef.Set(ctx, map[string]interface{}{
+		"tasks": map[string]interface{}{
+			taskRef.ID: task,
+		},
+	}, firestore.MergeAll)
+	if err != nil {
+		return err
+	}
+
 	// Run Cloud Run function
 	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", serviceURL)
 	idToken, err := metadata.Get(tokenURL)
@@ -119,9 +145,12 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	defer response.Body.Close()
 
 	// Check status
-	if response.StatusCode != 200 {
-		log.Fatalf("POST response did not return 200 status: %d", response.StatusCode)
+	if response.StatusCode == 200 {
+		task.Status = "success"
+	} else {
+		task.Status = "failure"
 	}
+	task.Timestamp = time.Now().Format(time.RFC3339)
 
 	// Read body
 	bs, err = ioutil.ReadAll(response.Body)
@@ -137,10 +166,19 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		log.Panicf("Failed to unmarshal result: %v", err)
 	}
-	result["timestamp"] = time.Now().Format(time.RFC3339)
 
-	// Write the doc to the "tasks" collection
-	_, _, err = fc.Collection("ws").Doc(target.Workspace).Collection("tasks").Add(ctx, result)
+	// Update the host with the result
+	if result["error"] != nil {
+		task.Status = "failure"
+	}
+	_, err = hostRef.Set(ctx, map[string]interface{}{
+		"tasks": map[string]interface{}{
+			taskRef.ID: task,
+		},
+	}, firestore.MergeAll)
+
+	// Write the results to the task doc
+	_, err = taskRef.Set(ctx, result)
 	return err
 
 }

@@ -5,11 +5,14 @@ import { withRouter } from 'react-router-dom';
 import { Container, Divider, Header, Form, Button, Message, Dropdown } from 'semantic-ui-react';
 
 class RunTask extends Component {
+  constructor(props) {
+    super(props);
+  }
   // Call cloud function, since we don't expect result we don't do anything
   callCloudFunction = (functionName, hostid) => {
+    var {wsid} = this.props.match.params;
     if (this.props.firebase.auth.currentUser) {
-      var wsid = this.props.match.params.wsid;
-      this.props.firebase.auth.currentUser.getIdToken().then(function (idToken) {
+      this.props.firebase.auth.currentUser.getIdToken().then((idToken) => {
         // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
         fetch('https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/' + functionName + "?access_token=" + idToken, {
           method: 'POST',
@@ -22,8 +25,6 @@ class RunTask extends Component {
           referrer: 'no-referrer',
           body: JSON.stringify({ "workspace": wsid, "id": hostid })
         }).then(response => {
-          // console.log(response.status)
-          // console.log(response.text())
           this.props.history.push('/ws/' + wsid + '/host/' + hostid);
         })
           .catch(error => {
@@ -77,7 +78,7 @@ class RunTask extends Component {
                   defaultValue={option[0].value}
                 />
                 <Divider />
-                <Button onClick={this.callCloudFunction('api/v1/runtask', docId)} type="submit">Run</Button>
+                <Button onClick={() => this.callCloudFunction('api/v1/runtask', docId)} type="submit">Run</Button>
               </div>
               :
               <div>

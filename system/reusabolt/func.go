@@ -54,7 +54,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	// Try checking for a default key
 	keyMaterial, err := berglas.Resolve(ctx, fmt.Sprintf("berglas://%s/default", berglasBucket))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("Found key material in berglas")
 	if len(keyMaterial) == 0 {
@@ -130,17 +130,17 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", serviceURL)
 	idToken, err := metadata.Get(tokenURL)
 	if err != nil {
-		log.Fatalf("failed to get id token: %+v", err)
+		return fmt.Errorf("failed to get id token: %+v", err)
 	}
 	body := bytes.NewReader(bs)
 	req, err := http.NewRequest("POST", serviceURL, body)
 	if err != nil {
-		log.Fatalf("failed to create POST request: %+v", err)
+		return fmt.Errorf("failed to create POST request: %+v", err)
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", idToken))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatalf("failed to execute POST request: %+v", err)
+		return fmt.Errorf("failed to execute POST request: %+v", err)
 	}
 	defer response.Body.Close()
 
@@ -155,16 +155,15 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	// Read body
 	bs, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatalf("failed to read POST response body: %+v", err)
+		return fmt.Errorf("failed to read POST response body: %+v", err)
 	}
-
 	log.Printf("POST response body: %s", bs)
 
 	// Unmarshal result
 	var result map[string]interface{}
 	err = json.Unmarshal(bs, &result)
 	if err != nil {
-		log.Panicf("Failed to unmarshal result: %v", err)
+		return err
 	}
 
 	// Update the host with the result
@@ -176,6 +175,9 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 			taskRef.ID: task,
 		},
 	}, firestore.MergeAll)
+	if err != nil {
+		return err
+	}
 
 	// Write the results to the task doc
 	_, err = taskRef.Set(ctx, result)

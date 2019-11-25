@@ -12,19 +12,17 @@ import (
 	"cloud.google.com/go/pubsub"
 )
 
-type storageEvent struct {
-	Bucket   string `json:"bucket"`
-	Name     string `json:"name"`
+type storagePayload struct {
 	Metadata struct {
 		MimosaType        string `json:"mimosa-type"`
 		MimosaTypeVersion string `json:"mimosa-type-version"`
 	} `json:"metadata"`
-	Workspace string `json:"workspace"`
 }
 
 type routerMessage struct {
 	Bucket    string `json:"bucket"`
 	Name      string `json:"name"`
+	EventType string `json:"eventType"`
 	Version   string `json:"version"`
 	Workspace string `json:"workspace"`
 }
@@ -32,16 +30,16 @@ type routerMessage struct {
 // Route responds to updates to Cloud Storage by enqueueing the changes in the right place for processing
 func Route(ctx context.Context, m *pubsub.Message) error {
 
-	// Unmarshall the storage event
-	var storageEvent storageEvent
-	err := json.Unmarshal(m.Data, &storageEvent)
+	// Unmarshall the storage payload
+	var storagePayload storagePayload
+	err := json.Unmarshal(m.Data, &storagePayload)
 	if err != nil {
 		return err
 	}
-	log.Printf("storage message: %v", storageEvent)
+	log.Printf("storage payload: %v", storagePayload)
 
 	// Objects that do not have both a type and version are not routed
-	if storageEvent.Metadata.MimosaType == "" || storageEvent.Metadata.MimosaTypeVersion == "" {
+	if storagePayload.Metadata.MimosaType == "" || storagePayload.Metadata.MimosaTypeVersion == "" {
 		return nil
 	}
 
@@ -50,7 +48,7 @@ func Route(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return err
 	}
-	attrs, err := storageClient.Bucket(storageEvent.Bucket).Attrs(ctx)
+	attrs, err := storageClient.Bucket(m.Attributes["bucketId"]).Attrs(ctx)
 	if err != nil {
 		return err
 	}
@@ -68,17 +66,12 @@ func Route(ctx context.Context, m *pubsub.Message) error {
 		return fmt.Errorf("GCP_PROJECT environment variable must be set")
 	}
 
-	// Queue the message onto the topic associated with this type
-	client, err := pubsub.NewClient(ctx, project)
-	if err != nil {
-		return err
-	}
-	topicName := "type-" + storageEvent.Metadata.MimosaType
-	topic := client.TopicInProject(topicName, project)
+	// Build the router message
 	routerMessage := routerMessage{
-		Bucket:    storageEvent.Bucket,
-		Name:      storageEvent.Name,
-		Version:   storageEvent.Metadata.MimosaTypeVersion,
+		Bucket:    m.Attributes["bucketId"],
+		Name:      m.Attributes["objectId"],
+		EventType: m.Attributes["eventType"],
+		Version:   storagePayload.Metadata.MimosaTypeVersion,
 		Workspace: workspace,
 	}
 	log.Printf("router message: %v", routerMessage)
@@ -86,7 +79,23 @@ func Route(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return err
 	}
+
+	// Queue the message onto the topic associated with this type
+	client, err := pubsub.NewClient(ctx, project)
+	if err != nil {
+		return err
+	}
+	topicName := "type-" + storagePayload.Metadata.MimosaType
+	topic := client.TopicInProject(topicName, project)
 	result := topic.Publish(ctx, &pubsub.Message{Data: data})
+	_, err = result.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Queue the message for evaluation also
+	topic = client.TopicInProject("system-evaluator", project)
+	result = topic.Publish(ctx, &pubsub.Message{Data: data})
 	_, err = result.Get(ctx)
 	if err != nil {
 		return err

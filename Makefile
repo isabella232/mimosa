@@ -9,6 +9,7 @@ COMPONENTS := \
 	api \
 	sources \
 	docker \
+	system/evaluator \
 	system/reusabolt \
 	system/router \
 	system/usermgmt \

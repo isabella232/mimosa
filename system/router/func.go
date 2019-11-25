@@ -20,11 +20,12 @@ type storagePayload struct {
 }
 
 type routerMessage struct {
-	Bucket    string `json:"bucket"`
-	Name      string `json:"name"`
-	EventType string `json:"eventType"`
-	Version   string `json:"version"`
-	Workspace string `json:"workspace"`
+	Bucket            string `json:"bucket"`
+	Name              string `json:"name"`
+	EventType         string `json:"event-type"`
+	MimosaType        string `json:"mimosa-type"`
+	MimosaTypeVersion string `json:"mimosa-type-version"`
+	Workspace         string `json:"workspace"`
 }
 
 // Route responds to updates to Cloud Storage by enqueueing the changes in the right place for processing
@@ -68,11 +69,12 @@ func Route(ctx context.Context, m *pubsub.Message) error {
 
 	// Build the router message
 	routerMessage := routerMessage{
-		Bucket:    m.Attributes["bucketId"],
-		Name:      m.Attributes["objectId"],
-		EventType: m.Attributes["eventType"],
-		Version:   storagePayload.Metadata.MimosaTypeVersion,
-		Workspace: workspace,
+		Bucket:            m.Attributes["bucketId"],
+		Name:              m.Attributes["objectId"],
+		EventType:         m.Attributes["eventType"],
+		MimosaType:        storagePayload.Metadata.MimosaType,
+		MimosaTypeVersion: storagePayload.Metadata.MimosaTypeVersion,
+		Workspace:         workspace,
 	}
 	log.Printf("router message: %v", routerMessage)
 	data, err := json.Marshal(routerMessage)

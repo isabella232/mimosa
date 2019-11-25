@@ -16,10 +16,12 @@ import (
 )
 
 type routerMessage struct {
-	Bucket    string `json:"bucket"`
-	Name      string `json:"name"`
-	Version   string `json:"version"`
-	Workspace string `json:"workspace"`
+	Bucket            string `json:"bucket"`
+	Name              string `json:"name"`
+	EventType         string `json:"event-type"`
+	MimosaType        string `json:"mimosa-type"`
+	MimosaTypeVersion string `json:"mimosa-type-version"`
+	Workspace         string `json:"workspace"`
 }
 
 type host struct {
@@ -49,7 +51,7 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		log.Printf("router message: %v", routerMessage)
 
 		// FIXME Check version is supported
-		if routerMessage.Version == "" {
+		if routerMessage.MimosaTypeVersion == "" {
 			return fmt.Errorf("no version found in the router message: %v", err)
 		}
 

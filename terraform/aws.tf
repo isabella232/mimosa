@@ -44,11 +44,12 @@ resource "aws_instance" "ubuntu1804" {
 
   count = var.total
 
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.nano"
   key_name      = "mimosa"
 
   tags = {
+    mimosa = "true"
     lifetime = "1d"
     Name     = "mimosa-ubuntu1804-${count.index}"
   }

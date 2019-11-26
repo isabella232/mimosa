@@ -13,6 +13,7 @@ COMPONENTS := \
 	system/reusabolt \
 	system/router \
 	system/usermgmt \
+	actions/reaper \
 	worldbuilders/inventory
 
 .PHONY: $(COMPONENTS)

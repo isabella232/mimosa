@@ -1,0 +1,5 @@
+{
+  "description": "Gather system facts using ruby and facter",
+  "private": true,
+  "parameters": {}
+}

@@ -1,0 +1,23 @@
+{
+    "name": "facts",
+    "targets": [
+        "ec2-34-253-213-182.eu-west-1.compute.amazonaws.com"
+    ],
+    "inventory": {
+        "nodes": [
+            {
+                "name": "ec2-34-253-213-182.eu-west-1.compute.amazonaws.com",
+                "config": {
+                    "transport": "ssh",
+                    "ssh": {
+                        "user": "ubuntu",
+                        "private-key": {
+                            "key-data": "-----BEGIN RSA PRIVATE KEY-----\r\nSNIP\r\n-----END RSA PRIVATE KEY-----"
+                        },
+                        "host-key-check": false
+                    }
+                }
+            }
+        ]
+    }
+}

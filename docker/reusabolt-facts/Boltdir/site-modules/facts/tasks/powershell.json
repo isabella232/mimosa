@@ -1,0 +1,5 @@
+{
+  "description": "Gather system facts using powershell",
+  "private": true,
+  "parameters": {}
+}

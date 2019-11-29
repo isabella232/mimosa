@@ -37,6 +37,10 @@ You may find that GCP asks you to enable particular APIs or to enable billing as
     API [cloudfunctions.googleapis.com] not enabled on project
     [870066425029]. Would you like to enable and retry (this will take a few minutes)? (y/N)?  y
 
+Enable Identity Platform in your new project (TODO: workout minimum services required included within Identity platform)
+
+    https://console.cloud.google.com/customer-identity
+
 ## Test
 
 Build, test and lint Mimosa like this:

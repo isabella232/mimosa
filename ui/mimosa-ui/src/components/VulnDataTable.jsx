@@ -3,7 +3,7 @@ import { Table, Checkbox, Button, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
 import HOSTS_COLLECTION from '../utils/Fixtures/hosts_collection.js';
 
-class HostDataTable extends Component {
+class VulnDataTable extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -24,7 +24,7 @@ class HostDataTable extends Component {
   pullHostData = (workspace) => {
     var stagingArray = [];
     // onSnapshot will update view if firestore updates
-    this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("hosts").get().then((querySnapshot) => {
+    this.props.firebase.app.firestore().collection("ws").doc(workspace).collection("vulns").get().then((querySnapshot) => {
       // reset data to avoid duplication
       this.setState({
         data: [{}],
@@ -49,6 +49,7 @@ class HostDataTable extends Component {
       // data: HOSTS_COLLECTION, //comment out when not using fixture data
       hosts: [],
     });
+    console.log("this time", workspace)
     // pull the read data from firestore
     this.pullHostData(workspace);
   }
@@ -91,15 +92,17 @@ class HostDataTable extends Component {
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>Name</Table.HeaderCell>
-              <Table.HeaderCell>Source</Table.HeaderCell>
-              <Table.HeaderCell>State</Table.HeaderCell>
-              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell>Score</Table.HeaderCell>
+              <Table.HeaderCell>Count</Table.HeaderCell>
+              {/* <Table.HeaderCell>
+                Run Task
+              </Table.HeaderCell> */}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {data && data.map((listVal) => {
               var rowState;
-              if (listVal.available === 'false') {
+              if (listVal.state === 'terminated') {
                 rowState = false;
               } else {
                 rowState = true;
@@ -107,20 +110,9 @@ class HostDataTable extends Component {
               var {workspace} = this.props;
               return (
                 <Table.Row error={!rowState} positive={rowState}>
-                  <Table.Cell><Link to={`/ws/${workspace}/host/${listVal.id}`}>{listVal.hostname}</Link></Table.Cell>
-                  <Table.Cell>{listVal.source}</Table.Cell>
-                  <Table.Cell>{listVal.available}</Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      primary
-                      disabled={!rowState}
-                      style={{ float: "right" }}
-                      onClick={() => this.runTask(listVal.hostname, listVal.id)}
-                    >
-                      Run Task&nbsp;
-                      <Icon name='bolt' />
-                    </Button>
-                  </Table.Cell>
+                  <Table.Cell><Link to={`/ws/${workspace}/vuln/${listVal.id}`}>{listVal.name}</Link></Table.Cell>
+                  <Table.Cell>{listVal.score}</Table.Cell>
+                  <Table.Cell>{listVal.count}</Table.Cell>
                 </Table.Row>
               )
             })}
@@ -130,4 +122,4 @@ class HostDataTable extends Component {
     )
   }
 }
-export default HostDataTable;
+export default VulnDataTable;

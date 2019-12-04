@@ -130,6 +130,26 @@ The document contains information about the workspace and has the following fiel
 }
 ```
 
+#### Vulnerability document
+
+```json
+{
+    "name": "heartbleed",
+    "score": "9.9",
+    "count": 55,
+    "hosts": {
+        "0c03de6ed173e4b4fe1a8f5307996fd429da6260": {
+            "name": "i-123nsdflknsd24",
+            "hostname": "ec2-23-777-765-189.compute-2.amazonaws.com"
+        },
+        "e1a8f5307996fd429da62609d0085067de627c7d": {
+            "name": "i-123nsdflknsd24",
+            "hostname": "ec2-63-479-735-209.compute-1.amazonaws.com"
+        },
+    }
+}
+```
+
 #### Host document
 
 The document ID is determined by the source in a deterministic fashion based on the contents. Clients find it by listing the `hosts` subcollection in the chosen workspace.

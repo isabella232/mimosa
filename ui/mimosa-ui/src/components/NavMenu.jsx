@@ -58,6 +58,12 @@ class NavMenu extends Component {
               onClick={this.handleMenuNav}
               as={Link} to={prefix + '/hosts'}
             />
+            <Menu.Item
+              name='Vulnerabilities'
+              active={activeItem === 'vulns'}
+              onClick={this.handleMenuNav}
+              as={Link} to={prefix + '/vulns'}
+            />
             {/* <Menu.Item
               name='run context'
               active={activeItem === 'run context'}

@@ -91,19 +91,15 @@ class HostDataTable extends Component {
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>Name</Table.HeaderCell>
-              <Table.HeaderCell>Hostname</Table.HeaderCell>
-              <Table.HeaderCell>IP</Table.HeaderCell>
               <Table.HeaderCell>Source</Table.HeaderCell>
               <Table.HeaderCell>State</Table.HeaderCell>
-              <Table.HeaderCell>
-                Host Select
-              </Table.HeaderCell>
+              <Table.HeaderCell></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {data && data.map((listVal) => {
               var rowState;
-              if (listVal.state === 'terminated') {
+              if (listVal.available === 'false') {
                 rowState = false;
               } else {
                 rowState = true;
@@ -111,13 +107,16 @@ class HostDataTable extends Component {
               var {workspace} = this.props;
               return (
                 <Table.Row error={!rowState} positive={rowState}>
-                  <Table.Cell><Link to={`/ws/${workspace}/host/${listVal.id}`}>{listVal.name}</Link></Table.Cell>
-                  <Table.Cell>{listVal.hostname}</Table.Cell>
-                  <Table.Cell>{listVal.ip}</Table.Cell>
+                  <Table.Cell><Link to={`/ws/${workspace}/host/${listVal.id}`}>{listVal.hostname}</Link></Table.Cell>
                   <Table.Cell>{listVal.source}</Table.Cell>
-                  <Table.Cell>{listVal.state}</Table.Cell>
+                  <Table.Cell>{listVal.available}</Table.Cell>
                   <Table.Cell>
-                    <Button primary onClick={() => this.runTask(listVal.hostname, listVal.id)}>
+                    <Button
+                      primary
+                      disabled={!rowState}
+                      style={{ float: "right" }}
+                      onClick={() => this.runTask(listVal.hostname, listVal.id)}
+                    >
                       Run Task&nbsp;
                       <Icon name='bolt' />
                     </Button>

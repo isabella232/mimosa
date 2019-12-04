@@ -8,6 +8,14 @@ Installed the Google Cloud SDK tools:
 
     brew cask install google-cloud-sdk
 
+Install jq
+
+    brew install jq
+
+Install berglas
+
+    brew install berglas
+
 You'll need to authenticate with gcloud:
 
     gcloud auth login
@@ -40,6 +48,10 @@ You may find that GCP asks you to enable particular APIs or to enable billing as
 Enable Identity Platform in your new project (TODO: workout minimum services required included within Identity platform)
 
     https://console.cloud.google.com/customer-identity
+
+Enable 'machine' auth
+
+    gcloud auth application-default login
 
 ## Test
 
@@ -83,9 +95,16 @@ Deploy ESP to handle auth and CORS for all API calls.
 
 Before deployment make sure these services are enabled:
 
-    gcloud services enable servicemanagement.googleapis.com\t
-    gcloud services enable servicecontrol.googleapis.com\t
-    gcloud services enable endpoints.googleapis.com\t
+    gcloud services enable servicemanagement.googleapis.com
+    gcloud services enable servicecontrol.googleapis.com
+    gcloud services enable endpoints.googleapis.com
+
+Update the 'openapi/openapi-mimosa.yaml' file to contain your project details
+
+* Update 'host' param to your cloud run instance url
+* Update 'x-google-issuer' to contain your project id
+* Update 'x-google-audiences' to your project id
+* Update the 'x-google-backend' address to your cloud function url
 
 Deploy the ESP to Cloud Run:
 
@@ -97,11 +116,11 @@ Create the endpoint service:
 
     gcloud endpoints services deploy openapi/openapi-mimosa.yaml
 
-If you see this error:
+When you see this error:
 
     Serverless ESP expects ENDPOINTS_SERVICE_NAME in environment variables.
 
-Then deploy again but this time specifying the ENDPOINTS_SERVICE_NAME env var:
+The endpoints are deployed, but we need to deploy the cloud run container again but this time we are specifying the ENDPOINTS_SERVICE_NAME env var for it:
 
     gcloud beta run deploy mimosa-esp \
     --image="gcr.io/endpoints-release/endpoints-runtime-serverless:1" \
@@ -110,15 +129,15 @@ Then deploy again but this time specifying the ENDPOINTS_SERVICE_NAME env var:
 
 Test your endpont is authenticating calls by making an unauthenticated curl request:
 
-    curl https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/hello
+    curl -X POST https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/api/v1/runtask
 
 You should see a 401 error.
 
-Now try an authenticated call using a Firebase token:
+Now try an authenticated call using a Firebase token (Remember to change URL to match your project):
 
     export FIREBASE_TOKEN=`curl 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCQieKOS6B36ut_o5n0loeW8rXetEqXnb0' -H 'Content-Type: application/json' --data-binary '{"email":"xxxx@example.com","password":"xxxx","returnSecureToken":true}'| jq -r .idToken`
 
-    curl --header "Authorization: Bearer $FIREBASE_TOKEN" https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/hello
+    curl -d "{}" -X POST --header "Authorization: Bearer $FIREBASE_TOKEN" https://mimosa-esp-tfmdd2vwoq-uc.a.run.app/api/v1/runtask
 
 ## Secrets
 

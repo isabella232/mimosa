@@ -8,6 +8,8 @@ import RunDetail from './RunDetail.jsx'
 import HostDetailView from './HostDetailView.jsx';
 import NotFound from './NotFound.jsx';
 import TaskResult from './TaskResult.jsx';
+import VulnsView from './VulnsView.jsx';
+import VulnsDetailView from './VulnsDetailView.jsx';
 
 export {
   Login,
@@ -19,5 +21,7 @@ export {
   RunDetail,
   HostDetailView,
   NotFound,
-  TaskResult
+  TaskResult,
+  VulnsView,
+  VulnsDetailView
 }

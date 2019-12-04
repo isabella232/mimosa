@@ -12,7 +12,9 @@ import {
   RunDetail,
   HostDetailView,
   NotFound,
-  TaskResult
+  TaskResult,
+  VulnsView,
+  VulnsDetailView
 } from './view';
 import {
   Switch,
@@ -60,6 +62,8 @@ class App  extends Component {
               <Route exact path="/ws" render={() => <Workspaces authUser={this.state.authUser} firebase={firebase}/>} />
               <Route exact path="/ws/:wsid/hosts" render={() => <HostsView authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/host/:hostid" render={() => <HostDetailView authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/vulns" render={() => <VulnsView authUser={this.state.authUser} firebase={firebase} />} />
+              <Route exact path="/ws/:wsid/vuln/:vulnid" render={() => <VulnsDetailView authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-context" render={() => <RunContext authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run/:runid" render={() => <TaskResult authUser={this.state.authUser} history={history} firebase={firebase} />} />

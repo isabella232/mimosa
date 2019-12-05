@@ -4,7 +4,7 @@ import MimosaHeader from './MimosaHeader';
 import NavMenu from './NavMenu';
 import TaskDataTable from './TaskDataTable';
 import TaskDetail from './TaskDetail';
-import VulnDataTable from './VulnDataTable';
+import BasicDataTable from './BasicDataTable';
 import VulnDetail from './VulnDetail';
 
 export {
@@ -14,6 +14,6 @@ export {
   NavMenu,
   TaskDataTable,
   TaskDetail,
-  VulnDataTable,
+  BasicDataTable,
   VulnDetail
 }

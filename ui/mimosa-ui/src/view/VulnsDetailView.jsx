@@ -9,7 +9,6 @@ class VulnDetailView extends Component {
   render() {
     const {authUser, firebase, history} = this.props;
     const { wsid, vulnid } = this.props.match.params;
-    console.log(authUser)
     return (
       <div>
         <NavMenu authUser={authUser} workspace={wsid} activePath="hosts" />

@@ -97,6 +97,7 @@ Mimosa lays out documents as follows:
 * `/ws/<workspaceid>`
 * `/ws/<workspaceid>/hosts/<hostid>`
 * `/ws/<workspaceid>/tasks/<taskid>`
+* `/ws/<workspaceid>/vulns/<vulnid>`
 
 Timestamps are RFC 3339 formatted strings.
 
@@ -127,26 +128,6 @@ The document contains information about the workspace and has the following fiel
 ```json
 {
     "name": "Team 1",
-}
-```
-
-#### Vulnerability document
-
-```json
-{
-    "name": "heartbleed",
-    "score": "9.9",
-    "count": 55,
-    "hosts": {
-        "0c03de6ed173e4b4fe1a8f5307996fd429da6260": {
-            "name": "i-123nsdflknsd24",
-            "hostname": "ec2-23-777-765-189.compute-2.amazonaws.com"
-        },
-        "e1a8f5307996fd429da62609d0085067de627c7d": {
-            "name": "i-123nsdflknsd24",
-            "hostname": "ec2-63-479-735-209.compute-1.amazonaws.com"
-        },
-    }
 }
 ```
 
@@ -182,6 +163,33 @@ The document contains information about the host and has the following fields:
 The document ID is allocated by Firestore. Clients find it by listing the `tasks` subcollection in the chosen workspace.
 
 The document contains the raw output from Bolt for a single task on a single host. The format is determined by Bolt.
+
+#### Vulnerability document
+
+The document ID is chosen by Firestore.
+
+The document contains information about vulnerable hosts and has the following fields:
+
+```json
+{
+    "id": "12345",
+    "name": "heartbleed",
+    "score": "9.9",
+    "count": 55,
+    "hosts": {
+        "0c03de6ed173e4b4fe1a8f5307996fd429da6260": {
+            "id": "556677",
+            "name": "ec2-23-777-765-189.compute-2.amazonaws.com",
+            "hostname": "10.10.10.10"
+        },
+        "e1a8f5307996fd429da62609d0085067de627c7d": {
+            "id": "558899",
+            "name": "ec2-63-479-735-209.compute-1.amazonaws.com",
+            "hostname": "10.11.11.11"
+        }
+    }
+}
+```
 
 #### Security rules
 

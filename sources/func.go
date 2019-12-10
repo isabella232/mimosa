@@ -4,8 +4,8 @@ import (
 	"github.com/puppetlabs/mimosa/sources/aws"
 	"github.com/puppetlabs/mimosa/sources/common"
 	"github.com/puppetlabs/mimosa/sources/gcp"
-	"github.com/puppetlabs/mimosa/sources/vmpooler"
 	"github.com/puppetlabs/mimosa/sources/qualys"
+	"github.com/puppetlabs/mimosa/sources/vmpooler"
 )
 
 // AWS source

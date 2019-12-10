@@ -3,7 +3,7 @@ package inventory
 import (
 	"context"
 	"crypto/sha1"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -99,16 +99,10 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		host.Timestamp = time.Now().Format(time.RFC3339)
 
 		// Compute a deterministic hash to use as firestore ID
-		sha := sha1.New()
-		_, err = sha.Write([]byte(source))
+		id, err := generateDeterministicID(routerMessage.Bucket, routerMessage.Name)
 		if err != nil {
 			return err
 		}
-		_, err = sha.Write([]byte(host.Name))
-		if err != nil {
-			return err
-		}
-		id := hex.EncodeToString(sha.Sum(nil))
 
 		// Write the doc to the "hosts" collection
 		fc, err := firestore.NewClient(ctx, firestore.DetectProjectID)
@@ -123,4 +117,18 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 		return err
 	}
 
+}
+
+func generateDeterministicID(bucketName, objectName string) (string, error) {
+	// Compute a deterministic hash to use as firestore ID
+	sha := sha1.New()
+	_, err := sha.Write([]byte(bucketName))
+	if err != nil {
+		return "", err
+	}
+	_, err = sha.Write([]byte(objectName))
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(sha.Sum(nil)), nil
 }

@@ -3,7 +3,7 @@ include ../../build/common.mk
 
 # Use "make deploy -j" for parallel deployment
 PHONY+= deploy
-deploy: deploy-aws deploy-gcp deploy-vmpooler
+deploy: deploy-aws deploy-gcp deploy-vmpooler deploy-qualys
 	@echo "✅ All deployments finished (`date '+%H:%M:%S'`)"
 
 PHONY+= deploy-aws
@@ -17,6 +17,10 @@ deploy-gcp:
 PHONY+= deploy-vmpooler
 deploy-vmpooler:
 	${call deploy-inventory,type-vmpooler-instance,VMPooler}
+
+PHONY+= deploy-qualys
+deploy-qualys:
+	${call deploy-inventory,type-qualys-instance,Qualys}
 
 define deploy-inventory
 	@echo "🔘 Deploying wb-inventory-${1} ... (`date '+%H:%M:%S'`)"

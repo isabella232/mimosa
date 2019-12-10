@@ -127,6 +127,7 @@ func HandleMessage(ctx context.Context, m *pubsub.Message) error {
 		}
 		if vulnerability.Hosts[hostID] == nil {
 			vulnerability.Hosts[hostID] = host
+			vulnerability.Count = len(vulnerability.Hosts)
 			_, err = ref.Set(ctx, &vulnerability)
 			if err != nil {
 				log.Printf("error: failed to updated vuln document %s: %v", vulnID, err)

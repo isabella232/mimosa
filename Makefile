@@ -14,7 +14,8 @@ COMPONENTS := \
 	system/router \
 	system/usermgmt \
 	actions/reaper \
-	worldbuilders/inventory
+	worldbuilders/inventory \
+	worldbuilders/vulns
 
 .PHONY: $(COMPONENTS)
 

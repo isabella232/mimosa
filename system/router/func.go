@@ -41,6 +41,7 @@ func Route(ctx context.Context, m *pubsub.Message) error {
 
 	// Objects that do not have both a type and version are not routed
 	if storagePayload.Metadata.MimosaType == "" || storagePayload.Metadata.MimosaTypeVersion == "" {
+		log.Printf("ignoring message - no mimosa type/version")
 		return nil
 	}
 

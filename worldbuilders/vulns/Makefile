@@ -3,12 +3,8 @@ include ../../build/common.mk
 
 # Use "make deploy -j" for parallel deployment
 PHONY+= deploy
-deploy: deploy-qualys
-	@echo "✅ All deployments finished (`date '+%H:%M:%S'`)"
-
-PHONY+= deploy-qualys
-deploy-aws:
-	${call deploy-vulns,type-qualys-asset,HandleMessage}
+deploy:
+	${call deploy-vulns,type-qualys-instance,HandleMessage}
 
 define deploy-vulns
 	@echo "🔘 Deploying wb-vulns-${1} ... (`date '+%H:%M:%S'`)"

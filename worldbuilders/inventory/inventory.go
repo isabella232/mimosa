@@ -80,6 +80,7 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 }
 
 func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, id string, routerMessage routerMessage) error {
+
 	// FIXME Check version is supported
 	if routerMessage.MimosaTypeVersion == "" {
 		return fmt.Errorf("no mimosa version found in the router message")
@@ -116,8 +117,7 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return err
 	}
 
-	// // Convert the object to a host
-	// // FIXME pass the mimosa-type and mimosa-type-version value to the convert func
+	// Convert the object to a host
 	host, err := convert(object)
 	if err != nil {
 		return err
@@ -126,6 +126,8 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return fmt.Errorf("host must have a name: %v", host)
 	}
 	host.Timestamp = time.Now().Format(time.RFC3339)
+	host.Source = routerMessage.Bucket
+
 	// Write the doc to the "hosts" collection
 	_, err = fc.Collection("ws").Doc(routerMessage.Workspace).Collection("hosts").Doc(id).Set(ctx, host)
 	if err != nil {

@@ -47,6 +47,17 @@ PHONY+= deploy-gcp
 deploy-gcp:
 	${call deploy-source,source-gcp,GCP}
 
+PHONY+= deploy-qualys
+deploy-qualys:
+ifndef MIMOSA_GCP_PROJECT
+	$(error MIMOSA_GCP_PROJECT must be defined)
+endif
+	${call deploy-source,source-qualys,Qualys}
+	@echo "🔘 Creating bucket ${MIMOSA_GCP_PROJECT}-blueray (if it doesn't exist)... (`date '+%H:%M:%S'`)"
+	@gsutil ls -b gs://${MIMOSA_GCP_PROJECT}-blueray || gsutil mb -b on gs://${MIMOSA_GCP_PROJECT}-blueray
+	@echo "🔘 Copying qualys.xml to bucket ${MIMOSA_GCP_PROJECT}-blueray (`date '+%H:%M:%S'`)"
+	@gsutil cp ../blueray/qualys.xml gs://${MIMOSA_GCP_PROJECT}-blueray
+
 PHONY+= deploy-vmpooler
 deploy-vmpooler:
 	${call deploy-source,source-vmpooler,VMPooler}

@@ -1,2 +1,2 @@
 steps:
-- name: 'gcr.io/cloud-builders-community/make'
+- name: 'gcr.io/$PROJECT_ID/make'

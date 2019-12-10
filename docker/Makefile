@@ -17,6 +17,13 @@ PHONY+= lint
 lint:
 	@echo "✅ Nothing to be done for docker (`date '+%H:%M:%S'`)"
 
+PHONY+= cloudbuild
+cloudbuild:
+	@echo "🔘 Creating 'build' container (`date '+%H:%M:%S'`)"
+	@docker build build -t gcr.io/${MIMOSA_GCP_PROJECT}/cloudbuild
+	@docker push gcr.io/${MIMOSA_GCP_PROJECT}/cloudbuild
+	@echo "✅ Created 'build' container (`date '+%H:%M:%S'`)"
+
 PHONY+= deploy
 deploy: deploy-runner
 

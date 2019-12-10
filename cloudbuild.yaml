@@ -1,5 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/go'
   args: ['mod', 'download']
+  env: ['GO111MODULE=on']
 - name: 'gcr.io/$PROJECT_ID/cloudbuild'
   args: ['make']

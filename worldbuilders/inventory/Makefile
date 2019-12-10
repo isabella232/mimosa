@@ -20,7 +20,7 @@ deploy-vmpooler:
 
 PHONY+= deploy-qualys
 deploy-qualys:
-	${call deploy-inventory,type-qualys-asset,Qualys}
+	${call deploy-inventory,type-qualys-instance,Qualys}
 
 define deploy-inventory
 	@echo "🔘 Deploying wb-inventory-${1} ... (`date '+%H:%M:%S'`)"

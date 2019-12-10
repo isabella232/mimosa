@@ -16,7 +16,7 @@ func TestHandleMessage(t *testing.T) {
 		Bucket:            "scottyw",
 		Name:              "qualys1.xml",
 		EventType:         "OBJECT_FINALIZE",
-		MimosaType:        "qualys-asset",
+		MimosaType:        "qualys-instance",
 		MimosaTypeVersion: "1.0.0",
 		Workspace:         "abcde",
 	})
@@ -27,7 +27,7 @@ func TestHandleMessage(t *testing.T) {
 		Bucket:            "scottyw",
 		Name:              "qualys2.xml",
 		EventType:         "OBJECT_FINALIZE",
-		MimosaType:        "qualys-asset",
+		MimosaType:        "qualys-instance",
 		MimosaTypeVersion: "1.0.0",
 		Workspace:         "abcde",
 	})

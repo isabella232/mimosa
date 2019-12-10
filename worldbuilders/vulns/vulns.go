@@ -3,7 +3,7 @@ package inventory
 import (
 	"context"
 	"crypto/sha1"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -149,5 +149,5 @@ func generateDeterministicID(bucketName, objectName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(sha.Sum(nil)), nil
+	return base64.RawURLEncoding.EncodeToString(sha.Sum(nil)), nil
 }

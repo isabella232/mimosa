@@ -69,11 +69,26 @@ Deploy Mimosa like this:
 
 There are also per-module Makefiles to allow deployment of individual Cloud Functions.
 
-### Sources 
+## Continuous Integration with Cloud Build
+
+Cloud Build is supported.
+
+As a one-off setup step you need to create the "mimosabuild" container that Cloud Run requires:
+
+    cd docker
+    make mimosabuild
+
+This builds the container locally and pushes it to your project, where Cloud Run can find it.
+
+You need to enable triggers in Cloud Run: https://console.cloud.google.com/cloud-build/triggers
+
+Set up triggers for push and/or pull request.
+
+### Sources
 
 Sources must be created individually:
 
-    WORKSPACE=xxxxx CONFIG_FILE=xxx.json make -C sources create 
+    WORKSPACE=xxxxx CONFIG_FILE=xxx.json make -C sources create
 
 The workspace id can be obtained from firestore.
 

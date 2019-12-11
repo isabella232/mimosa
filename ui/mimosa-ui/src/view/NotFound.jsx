@@ -2,13 +2,18 @@ import React, {Component} from 'react';
 import {withRouter} from 'react-router';
 import { Card, Container, Grid, Header, Icon } from 'semantic-ui-react';
 import './notfound.css';
+import cookie from 'react-cookies';
 
 class NotFound extends Component {
 
   render() {
+    if (!cookie.load('userEmail')) {
+      this.props.history.push('/login');
+    } else {
+      this.props.history.push('/ws');
+    }
     return (
       <Container>
-        
         <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
           <Grid.Column style={{ maxWidth: 450 }}>
             <Header as='h2' color='teal' textAlign='center'>

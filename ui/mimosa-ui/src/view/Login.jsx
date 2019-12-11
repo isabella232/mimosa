@@ -38,7 +38,7 @@ class Login extends Component {
       if (result && result.user.email) {
         console.log(result.user.email);
         let uid = result.user.uid;
-        cookie.save("userEmail", "loggedIn", { path: '/' });
+        cookie.save("userEmail", {login: "loggedIn", id: uid}, { path: '/' });
         this.props.history.push('/ws', { payload: uid})
       }
     }).catch((error) => {
@@ -52,8 +52,8 @@ class Login extends Component {
     this.props.firebase.auth.signInWithEmailAndPassword(email, password).then((result) => {
       if(result && result.user.email) {
         console.log("This one now! ", result.user.email);
-        cookie.save("userEmail", "loggedIn", { path: '/' });
         let uid = result.user.uid;
+        cookie.save("userEmail", {login: "loggedIn", id: uid}, { path: '/' });
         cookie.loadAll();
         this.setState({ ...INITIAL_STATE });
         this.props.history.push('/ws', { payload: uid})

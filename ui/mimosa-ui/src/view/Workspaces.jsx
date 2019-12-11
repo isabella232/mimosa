@@ -15,26 +15,23 @@ class Workspaces extends Component {
     }
   }
 
-  pullWorkspace = () => {
-    if(this.props.location.state && this.props.location.state.payload.length > 0) {
-      var uid = this.props.location.state.payload
-      this.props.firebase.app.firestore().collection("users").doc(uid).onSnapshot((querySnapshot) => {
-        var workspace = querySnapshot.data().workspaces;
-        this.setState({
-          data: workspace
-        })
+  pullWorkspace = (uid) => {
+    this.props.firebase.app.firestore().collection("users").doc(uid).onSnapshot((querySnapshot) => {
+      var workspace = querySnapshot.data().workspaces;
+      this.setState({
+        data: workspace
       })
-    }
+    })
   }
 
   componentDidMount() {
     const { authUser } = !!cookie.load('userEmail');
-    console.log("HELLO! ", cookie.loadAll());
     if (!cookie.load('userEmail')) {
-      console.log("Im in here, noooo")
       this.props.history.push('/login');
     }
-    this.pullWorkspace();
+    var cook = cookie.load('userEmail');
+
+    this.pullWorkspace(cook.id);
   }
   handleClick = (name) => {
     this.props.history.push(`/ws/${name}/hosts`);

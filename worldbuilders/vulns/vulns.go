@@ -25,6 +25,22 @@ type routerMessage struct {
 	Workspace         string `json:"workspace"`
 }
 
+type vulnerabilityDetails struct {
+	CvssV3Score         string   `json:"cvss_V3_score"`
+	Qid                 string   `json:"qid"`
+	PatchAvailable      bool     `json:"patch_available"`
+	CvssTemporalScore   string   `json:"cvss_temporal_score"`
+	CvssV3TemporalScore string   `json:"cvss_V3_temporal_score"`
+	Cves                []string `json:"cves"`
+	Exploitable         bool     `json:"exploitable"`
+	Severity            int      `json:"severity"`
+	Title               string   `json:"title"`
+	Solution            string   `json:"solution"`
+	Summary             string   `json:"summary"`
+	CvssModifier        float64  `json:"cvss_modifier"`
+	CvssScore           string   `json:"cvss_score"`
+}
+
 type vulnerability struct {
 	ID    string                   `firestore:"id"`
 	Name  string                   `firestore:"name"`
@@ -93,6 +109,9 @@ func HandleMessage(ctx context.Context, m *pubsub.Message) error {
 		return err
 	}
 
+	// Qualys details are stored in this separate bucket
+	qualysBucket := os.Getenv("GCP_PROJECT") + "-qualys"
+
 	// Update each vuln to add this host
 	for vulnID := range vulns {
 
@@ -108,8 +127,14 @@ func HandleMessage(ctx context.Context, m *pubsub.Message) error {
 			// Document doesn't exist
 			ref = fc.Collection("ws").Doc(routerMessage.Workspace).Collection("vulns").NewDoc()
 			vulnerability.ID = vulnID
-			vulnerability.Name = "Vulnerability " + vulnID // FIXME pull from the vuln database by vulnID
-			vulnerability.Score = "9.9"                    // FIXME pull from the vuln database by vulnID
+			vulnerabilityDetails, err := getVulnerabilityDetails(ctx, qualysBucket, vulnID)
+			if err != nil {
+				log.Printf("failed to load vulnerability details for vulnerability %s: %v", vulnID, err)
+				vulnerability.Name = "Unknown Vulnerability " + vulnID
+			} else {
+				vulnerability.Name = vulnerabilityDetails.Title
+				vulnerability.Score = vulnerabilityDetails.CvssScore
+			}
 		} else if err != nil {
 			// This is a real error
 			return err
@@ -127,6 +152,7 @@ func HandleMessage(ctx context.Context, m *pubsub.Message) error {
 		}
 		if vulnerability.Hosts[hostID] == nil {
 			vulnerability.Hosts[hostID] = host
+			vulnerability.Count = len(vulnerability.Hosts)
 			_, err = ref.Set(ctx, &vulnerability)
 			if err != nil {
 				log.Printf("error: failed to updated vuln document %s: %v", vulnID, err)
@@ -150,4 +176,27 @@ func generateDeterministicID(bucketName, objectName string) (string, error) {
 		return "", err
 	}
 	return base64.RawURLEncoding.EncodeToString(sha.Sum(nil)), nil
+}
+
+func getVulnerabilityDetails(ctx context.Context, qualysBucket, vulnID string) (*vulnerabilityDetails, error) {
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	obj := client.Bucket(qualysBucket).Object(vulnID + ".json")
+	rc, err := obj.NewReader(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rc.Close()
+	object, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return nil, err
+	}
+	var vulnerabilityDetails vulnerabilityDetails
+	err = json.Unmarshal(object, &vulnerabilityDetails)
+	if err != nil {
+		return nil, err
+	}
+	return &vulnerabilityDetails, nil
 }

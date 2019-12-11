@@ -1,0 +1,17 @@
+{
+    "cvss_V3_score": "5.5",
+    "qid": "256419",
+    "patch_available": true,
+    "cvss_temporal_score": "3.8",
+    "cvss_V3_temporal_score": "5",
+    "cves": [
+        "CVE-2018-3639"
+    ],
+    "exploitable": true,
+    "severity": 4,
+    "title": "CentOS Security Update for kernel (CESA-2018:1629)",
+    "solution": "To resolve this issue, upgrade to the latest packages which contain a patch. Refer to CentOS advisory centos 7 for updates and patch information.\nPatch:\nFollowing are links for downloading patches to fix the vulnerabilities:\n CESA-2018:1629: centos 7",
+    "summary": "CentOS has released security update for kernel security update to fix the vulnerabilities.Affected Products:centos 7 Successful exploitation allows attacker an unprivileged attacker to use this flaw to read privileged memory by conducting targeted cache side-channel attacks.",
+    "cvss_modifier": 5.5,
+    "cvss_score": "4.9"
+}

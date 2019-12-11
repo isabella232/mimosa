@@ -80,6 +80,7 @@ func build(convert conversionFunc) pubsubHandlerFunc {
 }
 
 func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, id string, routerMessage routerMessage) error {
+
 	// FIXME Check version is supported
 	if routerMessage.MimosaTypeVersion == "" {
 		return fmt.Errorf("no mimosa version found in the router message")
@@ -91,21 +92,6 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return err
 	}
 	obj := client.Bucket(routerMessage.Bucket).Object(routerMessage.Name)
-
-	// NOTE: We need to tweak how routerMessage and metadata is checked
-	// attrs, err := obj.Attrs(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// NOTE: we could cross-check these values vs the router message (e.g. routerMessage.Version), or just use one mechanism
-	// if _, ok := attrs.Metadata["mimosa-type"]; !ok {
-	// 	return fmt.Errorf("missing metadata mimosa-type")
-	// }
-	// if _, ok := attrs.Metadata["mimosa-type-version"]; !ok {
-	// 	return fmt.Errorf("missing metadata mimosa-type-version")
-	// }
-
 	rc, err := obj.NewReader(ctx)
 	if err != nil {
 		return err
@@ -116,8 +102,7 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return err
 	}
 
-	// // Convert the object to a host
-	// // FIXME pass the mimosa-type and mimosa-type-version value to the convert func
+	// Convert the object to a host
 	host, err := convert(object)
 	if err != nil {
 		return err
@@ -126,17 +111,18 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return fmt.Errorf("host must have a name: %v", host)
 	}
 	host.Timestamp = time.Now().Format(time.RFC3339)
+	host.Source = routerMessage.Bucket
+
 	// Write the doc to the "hosts" collection
 	_, err = fc.Collection("ws").Doc(routerMessage.Workspace).Collection("hosts").Doc(id).Set(ctx, host)
 	if err != nil {
 		return err
 	}
 	return nil
+
 }
 
 func delete(ctx context.Context, fc *firestore.Client, id string, routerMessage routerMessage) error {
-	// Write the doc to the "hosts" collection
-
 	_, err := fc.Collection("ws").Doc(routerMessage.Workspace).Collection("hosts").Doc(id).Delete(ctx)
 	if err != nil {
 		return err

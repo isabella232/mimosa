@@ -54,11 +54,17 @@ func convertQualys(object []byte) (*host, error) {
 		return nil, fmt.Errorf("no Qualys asset ID could be found")
 	}
 
+	ip := asset.IP
+	hostname := asset.DNS
+	if hostname == "" {
+		hostname = ip
+	}
+
 	// Build host
 	host := &host{
 		Name:     asset.ID,
-		Hostname: asset.DNS,
-		IP:       asset.IP,
+		Hostname: hostname,
+		IP:       ip,
 	}
 
 	return host, nil

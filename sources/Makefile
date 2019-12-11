@@ -36,7 +36,7 @@ endif
 
 # Use "make deploy -j" for parallel deployment
 PHONY+= deploy
-deploy: deploy-aws deploy-gcp deploy-vmpooler
+deploy: deploy-aws deploy-gcp deploy-vmpooler deploy-qualys
 	@echo "✅ All deployments finished (`date '+%H:%M:%S'`)"
 
 PHONY+= deploy-aws

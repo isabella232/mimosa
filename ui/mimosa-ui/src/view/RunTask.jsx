@@ -60,10 +60,12 @@ class RunTask extends Component {
     this.props.history.push('/ws/' + wsid + '/host/' + hostid);
   }
 
+  handleChange = (e, {name, value}) => this.setState({ [name]: value})
+
   render() {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
-    const { isLoading, isTaskTriggered, isError } = this.state;
+    const { isLoading, isTaskTriggered, isError, name, param } = this.state;
 
     var hasHosts, docId;
     if (this.props.location.state && this.props.location.state.response.length > 0) {
@@ -82,14 +84,20 @@ class RunTask extends Component {
           <Header as="h1">Run Task</Header>
           <Divider />
           <Form>
-            <Form.Field>
-              <label>Task Name</label>
-              <input value="facts" />
-            </Form.Field>
-            <Form.Field disabled>
-              <label>Params</label>
-              <input placeholder="e.g. verbose" />
-            </Form.Field>
+            <Form.Input
+              label="Task name"
+              placeholder="facts"
+              name="facts"
+              value={name}
+              onChange={this.handleChange}
+            />
+            <Form.Input
+              label="Params"
+              placeholder="e.g. verbose"
+              name="param"
+              value={param}
+              onChange={this.handleChange}
+            />
             <Form.Field disabled>
               <label>Note</label>
               <input placeholder="note about task run" />

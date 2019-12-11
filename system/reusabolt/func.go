@@ -19,7 +19,6 @@ import (
 
 // TriggerReusabolt runs Cloud Run functions in response to pubsub messages
 func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
-	log.Printf("Received pubsub message: %s", m.Data)
 
 	// Unmarshal the target
 	var target target
@@ -27,6 +26,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal body: %v", err)
 	}
+	log.Printf("target: %v", target)
 
 	// Bucket holding secrets
 	berglasBucket := os.Getenv("MIMOSA_SECRETS_BUCKET")
@@ -104,7 +104,8 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 
 	// Build the Reusabolt payload
 	te := taskExecution{
-		Name:    "facts",
+		Name:    target.Name,
+		Params:  target.Params,
 		Targets: []string{"*"},
 		Inventory: inventory{
 			Nodes: []inventoryNode{
@@ -115,7 +116,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 						SSH: &inventorySSH{
 							User: "ubuntu",
 							PrivateKey: &inventoryPrivateKey{
-								KeyData: keyMaterial,
+								KeyData: string(keyMaterial),
 							},
 						},
 					},
@@ -152,7 +153,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 		if err != nil {
 			return fmt.Errorf("failed to read POST response body: %+v", err)
 		}
-		log.Printf("POST response body: %s", data)
+		log.Printf("Reusabolt response: %s", data)
 
 		// Unmarshal the result
 		err = json.Unmarshal(data, &result)
@@ -185,8 +186,10 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 }
 
 type target struct {
-	Workspace string `json:"workspace"`
-	ID        string `json:"id"`
+	Workspace string            `json:"workspace"`
+	ID        string            `json:"id"`
+	Name      string            `json:"name,omitempty"`
+	Params    map[string]string `json:"params,omitempty"`
 }
 
 type task struct {
@@ -232,5 +235,5 @@ type inventorySSH struct {
 }
 
 type inventoryPrivateKey struct {
-	KeyData []byte `json:"key-data,omitempty"`
+	KeyData string `json:"key-data,omitempty"`
 }

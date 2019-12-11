@@ -13,8 +13,10 @@ import (
 )
 
 type target struct {
-	Workspace string `json:"workspace"`
-	ID        string `json:"id"`
+	Workspace string            `json:"workspace"`
+	ID        string            `json:"id"`
+	Name      string            `json:"name,omitempty"`
+	Params    map[string]string `json:"params,omitempty"`
 }
 
 // RunTask API handler

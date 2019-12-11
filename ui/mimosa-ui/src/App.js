@@ -51,7 +51,7 @@ class App  extends Component {
 
   render() {
     const {firebase} = this.props;
-    console.log(cookie.load('userEmail'));
+
     return (
         <div>
           <MimosaHeader />
@@ -67,7 +67,7 @@ class App  extends Component {
               <Route exact path="/ws/:wsid/run-context" render={() => <RunContext authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run-task" render={() => <RunTask authUser={this.state.authUser} firebase={firebase} />} />
               <Route exact path="/ws/:wsid/run/:runid" render={() => <TaskResult authUser={this.state.authUser} history={history} firebase={firebase} />} />
-              <Route render={() => <NotFound /> } />
+              <Route render={() => <NotFound history={history}/> } />
             </Switch>
           </Router>
         </div>

@@ -4,6 +4,7 @@ import {BasicDataTable} from '../components';
 import {NavMenu} from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
+import _ from 'lodash';
 
 class VulnsView extends Component {
   constructor(props) {
@@ -48,8 +49,9 @@ class VulnsView extends Component {
         rowData["id"] = doc.id;
         stagingArray.push(rowData);
       });
+      var sorted = _.orderBy(stagingArray, ['count', 'score'], ['desc', 'desc'])
       this.setState({
-        data: stagingArray,
+        data: sorted,
         enableRefresh: false,
       });
     });

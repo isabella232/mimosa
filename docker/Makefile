@@ -41,12 +41,12 @@ ifndef MIMOSA_GCP_PROJECT
 endif
 	${call build-container,runner}
 
-PHONY+= deploy-reusabolt-facts
-deploy-reusabolt-facts: enable-cloud-run-api
+PHONY+= deploy-reusabolt
+deploy-reusabolt: enable-cloud-run-api
 ifndef MIMOSA_GCP_PROJECT
 	$(error MIMOSA_GCP_PROJECT must be defined)
 endif
-	${call build-container,reusabolt-facts}
+	${call build-container,reusabolt}
 
 define build-container
 	@echo "🔘 Deploy container ${1} (`date '+%H:%M:%S'`)"

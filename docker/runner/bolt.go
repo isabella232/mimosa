@@ -10,22 +10,24 @@ import (
 	"os/exec"
 )
 
-//
-// BUILD AND RUN THE CONTAINER
-//
-// docker build . -t gcr.io/PROJECT_ID/runner;docker run -a STDOUT -a STDERR -it --env PORT=8080 -p 8080:8080 gcr.io/PROJECT_ID/runner
-//
-
-//
-// CURL TO TEST
-//
-// curl localhost:8080 --data-binary "@payload.json"
-//
-
 type payload struct {
-	User        string `json:"user"`
-	Hostname    string `json:"hostname"`
-	KeyMaterial []byte `json:"keymaterial"`
+	Name      string   `json:"name"`
+	Targets   []string `json:"targets"`
+	Inventory struct {
+		Nodes []struct {
+			Name   string `json:"name"`
+			Config struct {
+				Transport string `json:"transport"`
+				SSH       struct {
+					User       string `json:"user"`
+					PrivateKey struct {
+						KeyData []byte `json:"key-data"`
+					} `json:"private-key"`
+					HostKeyCheck bool `json:"host-key-check"`
+				} `json:"ssh"`
+			} `json:"config"`
+		} `json:"nodes"`
+	} `json:"inventory"`
 }
 
 func main() {
@@ -53,30 +55,34 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		log.Panicf("Failed to unmarshal payload: %v", err)
 	}
 
+	user := payload.Inventory.Nodes[0].Config.SSH.User
+	hostname := payload.Inventory.Nodes[0].Name
+	keyMaterial := payload.Inventory.Nodes[0].Config.SSH.PrivateKey.KeyData
+
 	// Check payload
-	if payload.User == "" {
+	if user == "" {
 		log.Panic("User cannot be empty")
 	}
-	if payload.Hostname == "" {
+	if hostname == "" {
 		log.Panic("Hostname cannot be empty")
 	}
-	if len(payload.KeyMaterial) == 0 {
+	if len(keyMaterial) == 0 {
 		log.Panic("KeyMaterial cannot be empty")
 	}
-	if len(payload.KeyMaterial) < 100 {
+	if len(keyMaterial) < 100 {
 		log.Print("Warning - KeyMaterial is suspiciously short")
 	}
 
 	// Debug
-	log.Printf("User: %s", payload.User)
-	log.Printf("Hostname: %s", payload.Hostname)
+	log.Printf("User: %s", user)
+	log.Printf("Hostname: %s", hostname)
 
 	// Write key file
 	pemFile, err := ioutil.TempFile(".", "mimosa-key-")
 	if err != nil {
 		log.Panicf("Failed to create key file: %v", err)
 	}
-	_, err = pemFile.Write([]byte(payload.KeyMaterial))
+	_, err = pemFile.Write(keyMaterial)
 	if err != nil {
 		log.Panicf("Failed to write key file: %v", err)
 	}
@@ -86,8 +92,8 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		"--format", "json",
 		"--private-key", pemFile.Name(),
 		"--no-host-key-check",
-		"--user", payload.User,
-		"--nodes", payload.Hostname)
+		"--user", user,
+		"--nodes", hostname)
 	result, err := cmd.Output()
 	if err != nil {
 		log.Printf("bolt command exited with an error: %v", err)

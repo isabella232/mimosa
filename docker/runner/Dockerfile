@@ -12,4 +12,8 @@ RUN mkdir /mimosa
 COPY . /mimosa
 WORKDIR /mimosa
 
+COPY Boltdir .
+RUN bolt puppetfile install
+RUN bolt task show
+
 CMD [ "go", "run", "bolt.go" ]

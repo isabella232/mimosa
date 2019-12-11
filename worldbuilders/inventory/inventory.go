@@ -92,21 +92,6 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return err
 	}
 	obj := client.Bucket(routerMessage.Bucket).Object(routerMessage.Name)
-
-	// NOTE: We need to tweak how routerMessage and metadata is checked
-	// attrs, err := obj.Attrs(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// NOTE: we could cross-check these values vs the router message (e.g. routerMessage.Version), or just use one mechanism
-	// if _, ok := attrs.Metadata["mimosa-type"]; !ok {
-	// 	return fmt.Errorf("missing metadata mimosa-type")
-	// }
-	// if _, ok := attrs.Metadata["mimosa-type-version"]; !ok {
-	// 	return fmt.Errorf("missing metadata mimosa-type-version")
-	// }
-
 	rc, err := obj.NewReader(ctx)
 	if err != nil {
 		return err
@@ -134,11 +119,10 @@ func update(ctx context.Context, fc *firestore.Client, convert conversionFunc, i
 		return err
 	}
 	return nil
+
 }
 
 func delete(ctx context.Context, fc *firestore.Client, id string, routerMessage routerMessage) error {
-	// Write the doc to the "hosts" collection
-
 	_, err := fc.Collection("ws").Doc(routerMessage.Workspace).Collection("hosts").Doc(id).Delete(ctx)
 	if err != nil {
 		return err

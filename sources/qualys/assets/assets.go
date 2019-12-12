@@ -38,12 +38,12 @@ type Host struct {
 
 type Code struct {
 	XMLName xml.Name `xml:"CODE,omitempty" json:"CODE,omitempty"`
-	String  string   `xml:",chardata" json:",omitempty"`
+	Code    string   `xml:",chardata" json:",omitempty"`
 }
 
 type URL struct {
 	XMLName xml.Name `xml:"URL,omitempty" json:"URL,omitempty"`
-	String  string   `xml:",chardata" json:",omitempty"`
+	URL     string   `xml:",chardata" json:",omitempty"`
 }
 
 type ID struct {

@@ -49,7 +49,10 @@ class VulnsView extends Component {
         rowData["id"] = doc.id;
         stagingArray.push(rowData);
       });
-      var sorted = _.orderBy(stagingArray, ['count', 'score'], ['desc', 'desc'])
+      var sorted = _.orderBy(stagingArray, [function (obj) {
+        return parseInt(obj.score, 10);
+      }, 'count', 'name'], ['desc', 'desc', 'asc'])
+
       this.setState({
         data: sorted,
         enableRefresh: false,

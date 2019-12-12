@@ -11,8 +11,9 @@ import (
 )
 
 type payload struct {
-	Name      string   `json:"name"`
-	Targets   []string `json:"targets"`
+	Name      string            `json:"name"`
+	Params    map[string]string `json:"params,omitempty"`
+	Targets   []string          `json:"targets"`
 	Inventory struct {
 		Nodes []struct {
 			Name   string `json:"name"`
@@ -21,7 +22,7 @@ type payload struct {
 				SSH       struct {
 					User       string `json:"user"`
 					PrivateKey struct {
-						KeyData []byte `json:"key-data"`
+						KeyData string `json:"key-data"`
 					} `json:"private-key"`
 					HostKeyCheck bool `json:"host-key-check"`
 				} `json:"ssh"`
@@ -55,6 +56,11 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		log.Panicf("Failed to unmarshal payload: %v", err)
 	}
 
+	name := payload.Name
+	params, err := json.Marshal(payload.Params)
+	if err != nil {
+		log.Panicf("Failed to marshal params: %v", err)
+	}
 	user := payload.Inventory.Nodes[0].Config.SSH.User
 	hostname := payload.Inventory.Nodes[0].Name
 	keyMaterial := payload.Inventory.Nodes[0].Config.SSH.PrivateKey.KeyData
@@ -74,6 +80,8 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Debug
+	log.Printf("Name: %s", name)
+	log.Printf("Params: %s", params)
 	log.Printf("User: %s", user)
 	log.Printf("Hostname: %s", hostname)
 
@@ -82,14 +90,16 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Panicf("Failed to create key file: %v", err)
 	}
-	_, err = pemFile.Write(keyMaterial)
+	_, err = pemFile.Write([]byte(keyMaterial))
 	if err != nil {
 		log.Panicf("Failed to write key file: %v", err)
 	}
 
 	// Run bolt
-	cmd := exec.Command("bolt", "task", "run", "facts",
+	cmd := exec.Command("bolt", "task", "run", name,
+		"--params", string(params),
 		"--format", "json",
+		"--run-as", "root",
 		"--private-key", pemFile.Name(),
 		"--no-host-key-check",
 		"--user", user,
@@ -97,10 +107,12 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	result, err := cmd.Output()
 	if err != nil {
 		log.Printf("bolt command exited with an error: %v", err)
-		result, err = json.Marshal(map[string]interface{}{"error": err})
+		var stderr map[string]interface{}
+		err = json.Unmarshal(result, &stderr)
 		if err != nil {
-			log.Fatalf("Marshaling the error failed: %v", err)
+			log.Fatalf("unmarshaling the error failed: %v", err)
 		}
+		log.Printf("stderr: %s", stderr)
 	}
 	log.Printf("Result: %s", result)
 

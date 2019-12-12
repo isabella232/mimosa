@@ -33,11 +33,17 @@ class HostDetail extends Component {
 
           // real firestore data, uncomment to use
           var data = querySnapshot.data();
+          
 
-          // fake fixture data, comment out to remove
+          if (data && data.tasks) {
+            var tasks = data.tasks
+            tasks && Object.keys(tasks).map((key, index) => {
+              tasks[key]["id"] = key;
+            })
+            tasks = _.orderBy(data.tasks, ['timestamp'], ['desc'])
+          }
+          
           // var data = HOST_DOCUMENT;
-          var tasks = _.orderBy(data.tasks, ['timestamp'], ['desc'])
-
           this.setState({
             hostname: data.hostname,
             ip: data.ip,
@@ -120,7 +126,7 @@ class HostDetail extends Component {
               return (
                 <Table.Row>
                   <Table.Cell>
-                    <Link to={`/ws/${workspace}/run/${key}`}>
+                    <Link to={`/ws/${workspace}/run/${tasks[key].id}`}>
                       {tasks[key].timestamp}
                     </Link>
                   </Table.Cell>

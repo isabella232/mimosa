@@ -1,0 +1,2 @@
+mod 'puppetlabs-package', '1.0.0'
+mod 'puppetlabs-facts', '0.6.0'

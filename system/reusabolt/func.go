@@ -17,22 +17,6 @@ import (
 	"github.com/GoogleCloudPlatform/berglas/pkg/berglas"
 )
 
-type target struct {
-	Workspace string `json:"workspace"`
-	ID        string `json:"id"`
-}
-
-type payload struct {
-	User        string `json:"user"`
-	Hostname    string `json:"hostname"`
-	KeyMaterial []byte `json:"keymaterial"`
-}
-
-type task struct {
-	Status    string `firestore:"status"`
-	Timestamp string `firestore:"timestamp"`
-}
-
 // TriggerReusabolt runs Cloud Run functions in response to pubsub messages
 func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	log.Printf("Received pubsub message: %s", m.Data)
@@ -65,7 +49,7 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	}
 
 	// Use a specified project if there is one or detect if running inside GCP
-	project := os.Getenv("GCP_PROJECT")
+	project := os.Getenv("MIMOSA_GCP_PROJECT")
 	if len(project) == 0 {
 		project = firestore.DetectProjectID
 	}
@@ -81,30 +65,10 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	if err != nil {
 		return err
 	}
-
-	// Construct the payload
 	hostname, err := host.DataAt("hostname")
 	if err != nil {
 		return err
 	}
-	payload := payload{
-		User:        "ubuntu",
-		Hostname:    hostname.(string),
-		KeyMaterial: keyMaterial,
-	}
-
-	// Marshal the payload
-	bs, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	// Look up the service URL
-	serviceURL := os.Getenv("MIMOSA_SERVICE_URL")
-	if len(serviceURL) == 0 {
-		log.Panic("Service URL cannot be empty")
-	}
-	log.Printf("Service URL: %s", serviceURL)
 
 	// Write the task result placeholder
 	taskRef, _, err := fc.Collection("ws").Doc(target.Workspace).Collection("tasks").Add(ctx, map[string]interface{}{})
@@ -126,14 +90,47 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 		return err
 	}
 
-	// Run Cloud Run function
+	// Find the Reusabolt service and get a token
+	serviceURL := os.Getenv("MIMOSA_SERVICE_URL")
+	if len(serviceURL) == 0 {
+		log.Panic("Service URL cannot be empty")
+	}
+	log.Printf("Service URL: %s", serviceURL)
 	tokenURL := fmt.Sprintf("/instance/service-accounts/default/identity?audience=%s", serviceURL)
 	idToken, err := metadata.Get(tokenURL)
 	if err != nil {
 		return fmt.Errorf("failed to get id token: %+v", err)
 	}
-	body := bytes.NewReader(bs)
-	req, err := http.NewRequest("POST", serviceURL, body)
+
+	// Build the Reusabolt payload
+	te := taskExecution{
+		Name:    "facts",
+		Targets: []string{"*"},
+		Inventory: inventory{
+			Nodes: []inventoryNode{
+				inventoryNode{
+					Name: hostname.(string),
+					Config: inventoryConfig{
+						Transport: "ssh",
+						SSH: &inventorySSH{
+							User: "ubuntu",
+							PrivateKey: &inventoryPrivateKey{
+								KeyData: keyMaterial,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	data, err := json.Marshal(te)
+	if err != nil {
+		return fmt.Errorf("failed to marshal the Reusabolt payload: %+v", err)
+	}
+
+	// Run Cloud Run function
+	body := bytes.NewReader(data)
+	req, err := http.NewRequest("POST", serviceURL+"/v1/task", body)
 	if err != nil {
 		return fmt.Errorf("failed to create POST request: %+v", err)
 	}
@@ -145,26 +142,28 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	defer response.Body.Close()
 
 	// Check status
+	var result map[string]interface{}
 	if response.StatusCode == 200 {
+
 		task.Status = "success"
+
+		// Read body
+		data, err = ioutil.ReadAll(response.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read POST response body: %+v", err)
+		}
+		log.Printf("POST response body: %s", data)
+
+		// Unmarshal the result
+		err = json.Unmarshal(data, &result)
+		if err != nil {
+			return err
+		}
+
 	} else {
 		task.Status = "failure"
 	}
 	task.Timestamp = time.Now().Format(time.RFC3339)
-
-	// Read body
-	bs, err = ioutil.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read POST response body: %+v", err)
-	}
-	log.Printf("POST response body: %s", bs)
-
-	// Unmarshal result
-	var result map[string]interface{}
-	err = json.Unmarshal(bs, &result)
-	if err != nil {
-		return err
-	}
 
 	// Update the host with the result
 	if result["error"] != nil {
@@ -183,4 +182,55 @@ func TriggerReusabolt(ctx context.Context, m *pubsub.Message) error {
 	_, err = taskRef.Set(ctx, result)
 	return err
 
+}
+
+type target struct {
+	Workspace string `json:"workspace"`
+	ID        string `json:"id"`
+}
+
+type task struct {
+	Status    string `firestore:"status"`
+	Timestamp string `firestore:"timestamp"`
+}
+
+type taskExecution struct {
+	Targets   []string          `json:"targets,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Params    map[string]string `json:"params,omitempty"`
+	Inventory inventory         `json:"inventory,omitempty"`
+}
+
+type inventory struct {
+	Nodes []inventoryNode `json:"nodes,omitempty"`
+}
+
+type inventoryNode struct {
+	Name   string          `json:"name,omitempty"`
+	Config inventoryConfig `json:"config,omitempty"`
+}
+
+type inventoryConfig struct {
+	Transport string          `json:"transport"`
+	WinRM     *inventoryWinRM `json:"winrm,omitempty"`
+	SSH       *inventorySSH   `json:"ssh,omitempty"`
+}
+
+type inventoryWinRM struct {
+	User              string `json:"user,omitempty"`
+	Password          string `json:"password,omitempty"`
+	SSL               bool   `json:"ssl"`                 // Don't omit empty
+	AllowHTTPFallback bool   `json:"allow_http_fallback"` // Attempt http if https fails
+	SSLVerify         bool   `json:"ssl-verify"`          // Don't omit empty
+}
+
+type inventorySSH struct {
+	User         string               `json:"user,omitempty"`
+	Password     string               `json:"password,omitempty"`
+	PrivateKey   *inventoryPrivateKey `json:"private-key,omitempty"`
+	HostKeyCheck bool                 `json:"host-key-check"` // Don't omit empty
+}
+
+type inventoryPrivateKey struct {
+	KeyData []byte `json:"key-data,omitempty"`
 }

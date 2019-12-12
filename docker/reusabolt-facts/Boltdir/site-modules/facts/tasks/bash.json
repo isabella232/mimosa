@@ -1,6 +1,0 @@
-{
-  "description": "Gather system facts using bash",
-  "private": true,
-  "input_method": "environment",
-  "parameters": {}
-}

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { NavMenu } from '../components';
 import { withFirebase } from '../utils/Firebase';
 import { withRouter } from 'react-router-dom';
-import { Container, Divider, Header, Form, Button, Message, Icon } from 'semantic-ui-react';
+import { Container, Divider, Header, Form, Button, Message, Input, Icon, Dropdown, Label } from 'semantic-ui-react';
 
 class RunTask extends Component {
   constructor(props) {
@@ -10,16 +10,18 @@ class RunTask extends Component {
     this.state = {
       isLoading: false,
       isTaskTriggered: false,
-      isError: false
+      isError: false,
+      task: "package"
     }
   }
   // Call cloud function, since we don't expect result we don't do anything
-  callCloudFunction = (functionName, hostid) => {
+  callCloudFunction = (functionName, docId) => {
     var {wsid} = this.props.match.params;
     this.setState({
       isLoading: true,
       isTaskTriggered: true,
     });
+    var { task, paramval, paramaction } = this.state;
     if (this.props.firebase.auth.currentUser) {
       this.props.firebase.auth.currentUser.getIdToken().then((idToken) => {
         // FIXME - ACCESS TOKEN SHOULD BE ADDED AS A BEARER TOKEN
@@ -32,7 +34,15 @@ class RunTask extends Component {
           },
           redirect: 'follow',
           referrer: 'no-referrer',
-          body: JSON.stringify({ "workspace": wsid, "id": hostid })
+          body: JSON.stringify({
+            "workspace": wsid,
+            "id": docId,
+            "name": task,
+            "params": {
+              "name": paramval,
+              "action": paramaction
+            }
+          })
         }).then(response => {
           this.setState({
             isLoading: false,
@@ -65,7 +75,7 @@ class RunTask extends Component {
   render() {
     const { authUser } = this.props;
     const { wsid } = this.props.match.params;
-    const { isLoading, isTaskTriggered, isError, name, param } = this.state;
+    const { isLoading, isTaskTriggered, isError, task, paramaction, paramval } = this.state;
 
     var hasHosts, docId;
     if (this.props.location.state && this.props.location.state.response.length > 0) {
@@ -77,6 +87,12 @@ class RunTask extends Component {
     const option = [
       { text: hasHosts, value: hasHosts }
     ]
+
+    const paramAction = [
+      {text: 'upgrade', value: 'upgrade'},
+      {text: 'install', value: 'install'},
+      {text: 'status', value: 'status'}
+    ]
     return (
       <div>
         <NavMenu authUser={authUser} workspace={wsid} activePath="hosts" />
@@ -86,18 +102,29 @@ class RunTask extends Component {
           <Form>
             <Form.Input
               label="Task name"
-              placeholder="facts"
-              name="facts"
-              value={name}
+              placeholder="task name"
+              name="task"
+              value={task}
               onChange={this.handleChange}
             />
-            <Form.Input
-              label="Params"
-              placeholder="e.g. verbose"
-              name="param"
-              value={param}
-              onChange={this.handleChange}
-            />
+            <Form.Field>
+              <label>Params</label>
+              <Dropdown
+                options={paramAction}
+                selection
+                className="param-action"
+                name="paramaction"
+                value={paramaction}
+                onChange={this.handleChange}
+              />
+              <Input
+                placeholder="enter value"
+                className="param-value"
+                name="paramval"
+                value={paramval}
+                onChange={this.handleChange}
+              />
+            </Form.Field>
             <Form.Field disabled>
               <label>Note</label>
               <input placeholder="note about task run" />

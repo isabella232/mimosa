@@ -12,6 +12,14 @@
   position: sticky;
 }
 
+.ui.input.param-value {
+  width: 30% !important;
+}
+
+.ui.selection.dropdown.param-action {
+  width: 40% !important;
+}
+
 .ui.container {
   padding-left: 50px;
 }

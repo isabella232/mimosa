@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Table, Message, Grid, List } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
 import HOST_DOCUMENT from '../utils/Fixtures/hosts_document';
-
+import _ from 'lodash';
 
 class HostDetail extends Component {
   constructor(props) {
@@ -36,6 +36,7 @@ class HostDetail extends Component {
 
           // fake fixture data, comment out to remove
           // var data = HOST_DOCUMENT;
+          var tasks = _.orderBy(data.tasks, ['timestamp'], ['desc'])
 
           this.setState({
             hostname: data.hostname,
@@ -44,7 +45,7 @@ class HostDetail extends Component {
             status: data.state,
             source: data.source,
             time: data.timestamp,
-            tasks: data.tasks,
+            tasks: tasks,
           })
         })
       })

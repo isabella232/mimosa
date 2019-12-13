@@ -14,7 +14,7 @@ class BasicDataTable extends Component {
     var { data, linkData, headers, cellKeys } = this.props;
     return (
       <div>
-        <Table className="ui single line table">
+        <Table fixed className="ui single line table">
           <Table.Header>
             <Table.Row>
               {headers && headers.map((element) => {

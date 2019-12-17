@@ -18,7 +18,7 @@ import {
 } from './view';
 import {
   Switch,
-  BrowserRouter as Router,
+  Router,
   Route,
 } from "react-router-dom";
 import { withFirebase } from './utils/Firebase';

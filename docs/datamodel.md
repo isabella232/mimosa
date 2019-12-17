@@ -197,7 +197,6 @@ The document contains information about vulnerable hosts and has the following f
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
   	function isOwner(ws) {
       return ws in request.auth.token.owner;
    	}
@@ -214,10 +213,18 @@ service cloud.firestore {
       return ws in request.auth.token.reader;
    	}
 
-    match /ws/{ws} {
+    function userHasWorkspace(ws) {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.workspaces[ws] != null;
+    }
+
+    match /ws/{ws}/{documents=**} {
       allow read, write: if isAdmin(ws) || isOwner(ws)
-      allow read: if isExecutor(ws) || isReader(ws)
+      allow read: if isExecutor(ws) || isReader(ws) || userHasWorkspace(ws)
   	}
+
+    match /users/{user} {
+        allow read: if request.auth != null && request.auth.uid == resource.id;
+    }
   }
 }
 ```

@@ -27,3 +27,21 @@ $(COMPONENTS):
 	@echo
 	@echo "🔘 ===> Component $@ ..."
 	@$(MAKE) -C $@ $(MAKECMDGOALS)
+
+UI-TARGETS := test-ui build-ui
+
+deploy-ui: $(UI-TARGETS)
+	cd ui/mimosa-ui && \
+	test-ui && build-ui
+
+ui-local:
+	cd ui/mimosa-ui && \
+	yarn start;
+
+build-ui:
+	cd ui/mimosa-ui && \
+	yarn build;
+
+test-ui:
+	cd ui/mimosa-ui && \
+	yarn test --watchAll=false;

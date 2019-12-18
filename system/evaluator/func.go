@@ -25,7 +25,7 @@ type routerMessage struct {
 var evaluaters = map[string]func(string) ([]string, error){
 	"aws-instance": aws.EvaluateInstance,
 	// "gcp-instance":      evalGCPInstance,
-	// "vmpooler-instance": evalVMPoolerInstance,
+	//"netscan-instance": netscan.evalInstance,
 }
 
 // Evaluate rules against cloud resources

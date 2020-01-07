@@ -2,6 +2,8 @@
 
 Experiments with Google Cloud
 
+Find the architecture document here: https://docs.google.com/document/d/1GigBPLmVp5jjrgxaS88MM9X_KT30_TDgbtAsNLH3odw/edit#
+
 ## Setup
 
 Installed the Google Cloud SDK tools:

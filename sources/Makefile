@@ -36,7 +36,7 @@ endif
 
 # Use "make deploy -j" for parallel deployment
 PHONY+= deploy
-deploy: deploy-aws deploy-gcp deploy-vmpooler deploy-qualys
+deploy: deploy-aws deploy-gcp deploy-netscan deploy-qualys deploy-netscan-iot
 	@echo "✅ All deployments finished (`date '+%H:%M:%S'`)"
 
 PHONY+= deploy-aws
@@ -58,9 +58,22 @@ endif
 	@echo "🔘 Copying qualys.xml to bucket ${MIMOSA_GCP_PROJECT}-blueray (`date '+%H:%M:%S'`)"
 	@gsutil cp ../blueray/qualys.xml gs://${MIMOSA_GCP_PROJECT}-blueray
 
-PHONY+= deploy-vmpooler
-deploy-vmpooler:
-	${call deploy-source,source-vmpooler,VMPooler}
+PHONY+= deploy-netscan
+deploy-netscan:
+	${call deploy-source,source-netscan,NetScan}
+
+PHONY+= deploy-netscan-iot
+deploy-netscan-iot:
+	@echo "🔘 Deploying source-netscan-iot ... (`date '+%H:%M:%S'`)"
+	@if ! gcloud pubsub topics describe iot-netscan-data &> /dev/null; then gcloud pubsub topics create iot-netscan-data; fi
+	@gcloud functions deploy \
+		--runtime go111 \
+		--no-allow-unauthenticated \
+		--trigger-topic iot-netscan-data \
+		--source . \
+		--entry-point=NetScanIot \
+		source-netscan-iot
+	@echo "✅ Deployed source-netscan-iot (`date '+%H:%M:%S'`)"
 
 define deploy-source
 	@echo "🔘 Deploying ${1} ... (`date '+%H:%M:%S'`)"

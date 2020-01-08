@@ -31,7 +31,6 @@ type MimosaData struct {
 
 // Build a Cloud Function from the  supplied query function
 func Build(queryFunc queryFunc) PubsubHandlerFunc {
-
 	// This is the pubsub handler
 	return func(ctx context.Context, m *pubsub.Message) error {
 		defer LogTiming(time.Now(), "Collect")
@@ -100,6 +99,92 @@ func Build(queryFunc queryFunc) PubsubHandlerFunc {
 			return err
 		}
 		checksums = pruneChecksums(checksums, items)
+		// Write state back to the bucket
+		data, err := json.Marshal(checksums)
+		if err != nil {
+			return fmt.Errorf("Cannot marshal the value: %v", err)
+		}
+		err = writeToBucket(bucket, "state.json", "", "", data)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+// Build_Iot a Cloud Function from the  supplied query function
+func Build_Iot() PubsubHandlerFunc {
+	// This is the pubsub handler
+	return func(ctx context.Context, m *pubsub.Message) error {
+		defer LogTiming(time.Now(), "Collect")
+
+		// data:{"name":"10.16.118.74","privateIPv4":"10.16.118.74","privateIPv6":""}
+
+		bucketName := m.Attributes["deviceId"]
+		if !strings.HasPrefix(bucketName, "source-") {
+			return fmt.Errorf("message must be a bucket name starting with 'source-': %v", bucketName)
+		}
+
+		// Create GCP client and get a handle on the bucket
+		client, err := storage.NewClient(context.Background())
+		if err != nil {
+			return err
+		}
+		bucket := client.Bucket(bucketName)
+
+		// Load source config from the bucket
+		var config map[string]string
+		err = unmarshalFromBucket(bucket, "config.json", &config)
+		if err != nil {
+			return fmt.Errorf("Cannot read config.json: %v", err)
+		}
+
+		// Load state from previous runs
+		var checksums map[string]string
+		err = unmarshalFromBucket(bucket, "state.json", &checksums)
+		if err != nil {
+			if err != storage.ErrObjectNotExist {
+				return fmt.Errorf("Cannot read state.json: %v", err)
+			}
+			// Use a default empty value instead
+			checksums = map[string]string{}
+		}
+
+		var hostData = make(map[string]string)
+		err = json.Unmarshal(m.Data, &hostData)
+		if err != nil {
+			return err
+		}
+
+		// Write items to the bucket
+		var item = MimosaData{
+			Version: "1.0",
+			Typ:     "netscan-instance",
+			Data:    m.Data,
+		}
+		start := time.Now()
+		id := hostData["name"]
+		previousChecksum, present := checksums[id]
+		sha := sha1.New()
+		_, err = sha.Write(m.Data)
+		if err != nil {
+			log.Printf("failed to compute SHA: %v", err)
+			return err
+		}
+		checksum := hex.EncodeToString(sha.Sum(nil))
+		if !present || checksum != previousChecksum {
+			err = writeToBucket(bucket, id, item.Typ, item.Version, item.Data)
+			if err != nil {
+				return err
+			}
+			checksums[id] = checksum
+			log.Printf("Change: %s", id)
+			log.Printf("Timing: Write: %dms", uint(time.Since(start).Seconds()*1000)) // Milliseconds not supported in Go 1.11
+		} else {
+			log.Printf("No change found: %s", id)
+		}
+
 		// Write state back to the bucket
 		data, err := json.Marshal(checksums)
 		if err != nil {

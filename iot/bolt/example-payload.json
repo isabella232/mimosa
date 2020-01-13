@@ -1,0 +1,21 @@
+{
+    "name": "facts",
+    "targets": [
+        "*"
+    ],
+    "inventory": {
+        "nodes": [
+            {
+                "name": "amiable-veneer.delivery.puppetlabs.net",
+                "config": {
+                    "transport": "ssh",
+                    "ssh": {
+                        "user": "root",
+                        "password": "Qu@lity!", 
+                        "host-key-check": false
+                    }
+                }
+            }
+        ]
+    }
+}

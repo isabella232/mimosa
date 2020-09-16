@@ -28,9 +28,11 @@ Configure gcloud to use the correct project ID (not project name):
 
     gcloud config set project $MIMOSA_GCP_PROJECT
 
-Enable Firestore in Native Mode in your new project. For now, any region is fine:
+Enable Firestore in your new project by going to this URL:
 
     https://console.cloud.google.com/firestore
+
+When prompted select "Native Mode" then choose a region. Choose one close to you if you have no other preference.
 
 Configure docker to work with GCP for cloud run:
 
@@ -79,25 +81,49 @@ You need to enable triggers in Cloud Run: https://console.cloud.google.com/cloud
 
 Set up triggers for push and/or pull request.
 
-### Sources
+## Creating a user and workspace
 
-Sources must be created individually:
+In order to use Mimosa, you need to create an applcation user.
 
-    WORKSPACE=xxxx CONFIG_FILE=xxxx.json make -C sources create
+Once Mimosa is deployed as described above, you need to create the user in the Identity Platform:
 
-The workspace id can be obtained from firestore.
+https://console.cloud.google.com/customer-identity
 
-The config file contains credentials and other configuration for your source. We recommend following the principle of least privilege. You can create a dedicated account for the target cloud provider with read-only permissions and use the credentials for that account in mimosa. Do not upload high privilege creds to mimosa at this stage!
+The simplest approach is to specify an example email with password.
 
-The following example assumes AWS. You will need your AWS access key, secret key and region. Create a file called "config.json" and put the values in there:
+The "usermgmt" world builder will create a workspace for the new user in Firestore automatically.
+
+You'll need the ID of the new workspace later and you can find it by browsing Firestore directly here:
+
+https://console.cloud.google.com/firestore/data
+
+All data for a workspace is stored in "/ws/<id>" where ID is a five character string like "mywm3".
+
+## Sources
+
+Sources must be created individually by hand.
+
+First you need to know the ID of the workspace where you're going to deploy your source - find this as described above.
+
+Second you need a config file that contains credentials and other configuration for your source. We recommend following the principle of least privilege. You can create a dedicated account for the target cloud provider with read-only permissions and use the credentials for that account in mimosa. Do not upload high privilege creds to mimosa at this stage!
+
+The following example assumes AWS. You will need your AWS access key, secret key and region. Create a file called "aws.json" and put your values in there:
 
 ```
 {
     "region": "eu-west-1",
-    "accessKey": "AKIAIOSFODNN7EXAMPLE",
-    "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    "accessKey": "xxxx",
+    "secretKey": "xxxx"
 }
 ```
+
+Finally create the source with a command like this:
+
+    WORKSPACE=xxxx CONFIG_FILE=xxxx.json make -C sources create
+
+e.g.
+
+    WORKSPACE=mywm3 CONFIG_FILE=aws.json make -C sources create
 
 ## Extensible Service Proxy (ESP)
 
@@ -130,12 +156,12 @@ When you see this error:
 
     Serverless ESP expects ENDPOINTS_SERVICE_NAME in environment variables.
 
-The endpoints are deployed, but we need to deploy the cloud run container again but this time we are specifying the ENDPOINTS_SERVICE_NAME env var for it:
+The endpoints are deployed, but we need to deploy the cloud run container again but this time we are specifying the ENDPOINTS_SERVICE_NAME env var for it. Replace the "xxxx" with your endpoint service name:
 
     gcloud beta run deploy mimosa-esp \
     --image="gcr.io/endpoints-release/endpoints-runtime-serverless:1" \
     --allow-unauthenticated \
-    --set-env-vars ENDPOINTS_SERVICE_NAME=mimosa-esp-tfmdd2vwoq-uc.a.run.app,ESP_ARGS=--cors_preset=basic,--cors_allow_origin=localhost
+    --set-env-vars ENDPOINTS_SERVICE_NAME=mimosa-esp-xxxx.a.run.app,ESP_ARGS=--cors_preset=basic,--cors_allow_origin=localhost
 
 Test your endpont is authenticating calls by making an unauthenticated curl request:
 

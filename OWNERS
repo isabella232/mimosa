@@ -1,0 +1,11 @@
+filters:
+  ".*":
+    reviewers:
+      - scottyw
+      - markfuller
+      - Andrew-Hayes
+    approvers:
+      - scottyw
+      - markfuller
+      - Andrew-Hayes
+
